@@ -40,6 +40,7 @@ DEFAULT_MCP_HTTP_HOST = os.getenv("MCP_HTTP_HOST", "0.0.0.0")
 DEFAULT_MCP_HTTP_PORT = int(os.getenv("MCP_HTTP_PORT", "8001"))
 DEFAULT_TEMPERATURE = float(os.getenv("COMPRESSOR_TEMPERATURE", "0.1"))
 DEFAULT_TIMEOUT = int(os.getenv("COMPRESSOR_TIMEOUT", "120"))
+DEFAULT_MIN_INSTRUCTION_TOKENS = int(os.getenv("PCM_MIN_INSTRUCTION_TOKENS", "12"))
 DEFAULT_PROXY_PORT = int(os.getenv("PCM_PROXY_PORT", "8090"))
 
 # Importar después de configurar logging
@@ -62,7 +63,8 @@ compressor = PromptCompressor(
     config=CompressorConfig(
         model=DEFAULT_MODEL,
         temperature=DEFAULT_TEMPERATURE,
-        timeout=DEFAULT_TIMEOUT
+        timeout=DEFAULT_TIMEOUT,
+        min_instruction_tokens=DEFAULT_MIN_INSTRUCTION_TOKENS,
     )
 )
 tools = PCMServerTools(compressor)

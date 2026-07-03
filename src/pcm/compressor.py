@@ -13,6 +13,7 @@ from dataclasses import dataclass
 import ollama
 
 from .models import CompressionResult, ComparisonResult
+from .compression_policy import CompressionPolicy
 
 # Configura logging
 logger = logging.getLogger(__name__)
@@ -102,6 +103,7 @@ class CompressorConfig:
     target_model: Optional[str] = None  # Modelos destino: "gpt-4", "claude-3", etc.
     think: Optional[bool] = None  # None = auto (Qwen3 requiere thinking para PCM)
     evaluator_model: str = "granite4.1:3b"  # Evaluador fijo para comparativas justas
+    min_instruction_tokens: int = 12  # No comprimir instrucciones más cortas
 
 
 class PromptCompressor:
@@ -247,6 +249,25 @@ class PromptCompressor:
         # Contar tokens originales
         original_tokens = self._count_tokens(prompt, self.config.model)
         logger.info(f"Prompt original: {original_tokens} tokens")
+
+        policy = CompressionPolicy(
+            min_instruction_tokens=self.config.min_instruction_tokens
+        )
+        count_tokens = lambda text: self._count_tokens(text, self.config.model)
+
+        should_compress, skip_reason = policy.should_compress_instruction(
+            prompt, count_tokens
+        )
+        if not should_compress:
+            logger.info("Compresión omitida: %s", skip_reason)
+            return self._passthrough_result(
+                prompt=prompt,
+                original_tokens=original_tokens,
+                start_time=start_time,
+                strategy=effective_strategy,
+                target_model=effective_target,
+                skip_reason=skip_reason,
+            )
         
         # Generar prompt de compresión
         compression_prompt = self._get_compression_prompt(effective_strategy)
@@ -269,6 +290,23 @@ class PromptCompressor:
             
             # Contar tokens comprimidos
             compressed_tokens = self._count_tokens(compressed_prompt, self.config.model)
+
+            should_apply, revert_reason = policy.should_apply_compression(
+                prompt,
+                compressed_prompt,
+                count_tokens,
+            )
+            if not should_apply:
+                logger.info("Compresión revertida: %s", revert_reason)
+                return self._passthrough_result(
+                    prompt=prompt,
+                    original_tokens=original_tokens,
+                    start_time=start_time,
+                    strategy=effective_strategy,
+                    target_model=effective_target,
+                    skip_reason=revert_reason,
+                    attempted_pcm=compressed_prompt,
+                )
             
             # Calcular ratio
             compression_ratio = 1 - (compressed_tokens / original_tokens) if original_tokens > 0 else 0
@@ -298,6 +336,40 @@ class PromptCompressor:
         except Exception as e:
             logger.error(f"Error al comprimir prompt: {e}")
             raise RuntimeError(f"Error de compresión: {str(e)}")
+
+    def _passthrough_result(
+        self,
+        *,
+        prompt: str,
+        original_tokens: int,
+        start_time: float,
+        strategy: str,
+        target_model: Optional[str],
+        skip_reason: str,
+        attempted_pcm: Optional[str] = None,
+    ) -> CompressionResult:
+        """Devuelve el prompt original sin comprimir cuando no hay ahorro neto."""
+        metadata: Dict[str, Any] = {
+            "model_used": self.config.model,
+            "temperature": self.config.temperature,
+            "think": self._resolve_think(),
+            "skipped": True,
+            "skip_reason": skip_reason,
+        }
+        if attempted_pcm:
+            metadata["attempted_pcm"] = attempted_pcm
+
+        return CompressionResult(
+            original_prompt=prompt,
+            compressed_prompt=prompt,
+            original_tokens=original_tokens,
+            compressed_tokens=original_tokens,
+            compression_ratio=0.0,
+            processing_time_ms=(time.time() - start_time) * 1000,
+            target_model=target_model,
+            strategy=strategy,
+            metadata=metadata,
+        )
     
     def compare_prompts(
         self,

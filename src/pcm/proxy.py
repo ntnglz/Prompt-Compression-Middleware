@@ -14,6 +14,7 @@ from typing import Any, Optional
 import httpx
 
 from .compressor import PromptCompressor
+from .compression_policy import CompressionPolicy
 from .e2e_benchmark import MISTRAL_PCM_SYSTEM_PROMPT
 from .prompt_utils import join_instruction_and_payload, split_instruction_and_payload
 
@@ -30,10 +31,12 @@ class ProxyConfig:
     inject_pcm_system: bool = True
     pcm_system_prompt: str = MISTRAL_PCM_SYSTEM_PROMPT
     timeout: float = 120.0
+    min_instruction_tokens: int = 12
 
     @classmethod
     def from_env(cls) -> "ProxyConfig":
         roles = os.getenv("PCM_COMPRESS_ROLES", "user")
+        policy = CompressionPolicy.from_env()
         return cls(
             upstream_base_url=os.getenv(
                 "PCM_UPSTREAM_URL", "https://api.mistral.ai/v1"
@@ -45,6 +48,7 @@ class ProxyConfig:
             inject_pcm_system=os.getenv("PCM_INJECT_SYSTEM", "true").lower()
             in ("1", "true", "yes"),
             timeout=float(os.getenv("PCM_PROXY_TIMEOUT", "120")),
+            min_instruction_tokens=policy.min_instruction_tokens,
         )
 
 
@@ -100,17 +104,55 @@ class ChatProxy:
         if not instruction:
             return text, {"skipped": True, "reason": "empty_instruction"}
 
+        policy = CompressionPolicy(
+            min_instruction_tokens=self.config.min_instruction_tokens
+        )
+        count_tokens = lambda value: self.compressor._count_tokens(
+            value, self.compressor.config.model
+        )
+
+        should_compress, skip_reason = policy.should_compress_instruction(
+            instruction, count_tokens
+        )
+        if not should_compress:
+            return text, {"skipped": True, "reason": skip_reason}
+
         result = await asyncio.to_thread(self.compressor.compress, instruction)
+        if result.metadata.get("skipped"):
+            return text, {
+                "skipped": True,
+                "reason": result.metadata.get("skip_reason", "no_savings"),
+            }
+
         compressed = join_instruction_and_payload(
             result.compressed_prompt,
             payload,
         )
+
+        should_apply, revert_reason = policy.should_apply_compression(
+            text,
+            compressed,
+            count_tokens,
+        )
+        if not should_apply:
+            return text, {"skipped": True, "reason": revert_reason}
+
+        instruction_tokens = count_tokens(instruction)
+        compressed_instruction_tokens = count_tokens(result.compressed_prompt)
+        full_original_tokens = count_tokens(text)
+        full_compressed_tokens = count_tokens(compressed)
         return compressed, {
-            "original_tokens": result.original_tokens,
-            "compressed_tokens": result.compressed_tokens,
-            "compression_ratio": result.compression_ratio,
+            "original_tokens": full_original_tokens,
+            "compressed_tokens": full_compressed_tokens,
+            "compression_ratio": (
+                1 - (full_compressed_tokens / full_original_tokens)
+                if full_original_tokens > 0
+                else 0.0
+            ),
             "processing_time_ms": result.processing_time_ms,
             "had_payload": bool(payload),
+            "instruction_tokens": instruction_tokens,
+            "compressed_instruction_tokens": compressed_instruction_tokens,
         }
 
     def _inject_pcm_system(self, messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
