@@ -5,7 +5,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import random
 import sys
 from pathlib import Path
 
@@ -25,40 +24,87 @@ GOLD_PATH = ROOT / "data" / "example_prompts.json"
 TEMPLATES_PATH = TRAINING_DIR / "templates.json"
 
 
+def _translation_pairs() -> list[tuple[str, str]]:
+    return [("es", "en"), ("en", "es")]
+
+
+def _context_variants(category: str, cfg: dict) -> list[dict[str, str]]:
+    """Genera combinaciones deterministas para alcanzar ~90 sintéticos únicos."""
+    if category == "summarization" and "documents" in cfg:
+        return [{}]
+
+    if category == "translation":
+        variants: list[dict[str, str]] = []
+        for domain in cfg.get("domains", ["technical"]):
+            for from_lang, to_lang in _translation_pairs():
+                variants.append({"from_lang": from_lang, "to_lang": to_lang, "domain": domain})
+        return variants
+
+    if "pairs" in cfg:
+        return [
+            {"item_a": pair[0], "item_b": pair[1]}
+            for pair in cfg["pairs"]
+        ]
+
+    if "topics" in cfg:
+        return [{"topic": topic} for topic in cfg["topics"]]
+
+    if "inputs" in cfg:
+        return [{"input": inp, "lang": inp} for inp in cfg["inputs"]]
+
+    return [{}]
+
+
 def expand_templates(templates: dict, *, seed: int = 42) -> list[dict]:
-    rng = random.Random(seed)
     examples: list[dict] = []
 
     for category, cfg in templates.items():
+        if category == "summarization" and "documents" in cfg:
+            for doc_idx, doc in enumerate(cfg["documents"]):
+                pcm = doc["pcm"]
+                ok, errors = validate_pcm_output(pcm)
+                if not ok:
+                    continue
+                ex = build_chat_example(doc["prompt"], pcm)
+                ex["_meta"] = {
+                    "id": f"synthetic_{category}_{doc_idx}",
+                    "category": category,
+                    "language": "es" if doc_idx % 2 == 0 else "en",
+                    "source": "synthetic",
+                }
+                examples.append(ex)
+            continue
+
         prompts = cfg["prompts"]
         pcm_templates = cfg["pcm_templates"]
 
-        for i, prompt_tpl in enumerate(prompts):
-            pcm_tpl = pcm_templates[i % len(pcm_templates)]
-            ctx: dict[str, str] = {
-                "lang": rng.choice(["python", "javascript", "rust"]),
-                "input": rng.choice(cfg.get("inputs", ["python"])),
-                "from_lang": rng.choice(["es", "en"]),
-                "to_lang": rng.choice(["en", "es"]),
-                "topic": rng.choice(cfg.get("topics", ["AI"])),
-            }
-            if "pairs" in cfg:
-                pair = rng.choice(cfg["pairs"])
-                ctx["item_a"], ctx["item_b"] = pair[0], pair[1]
+        for variant_idx, base_ctx in enumerate(_context_variants(category, cfg)):
+            for i, prompt_tpl in enumerate(prompts):
+                pcm_tpl = pcm_templates[i % len(pcm_templates)]
+                ctx = {
+                    "lang": base_ctx.get("lang", "python"),
+                    "input": base_ctx.get("input", "python"),
+                    "from_lang": base_ctx.get("from_lang", "es"),
+                    "to_lang": base_ctx.get("to_lang", "en"),
+                    "domain": base_ctx.get("domain", "technical"),
+                    "topic": base_ctx.get("topic", "AI"),
+                    "item_a": base_ctx.get("item_a", "item_a"),
+                    "item_b": base_ctx.get("item_b", "item_b"),
+                }
 
-            user_text = prompt_tpl.format(**ctx)
-            pcm = pcm_tpl.format(**ctx)
-            ok, errors = validate_pcm_output(pcm)
-            if not ok:
-                continue
-            ex = build_chat_example(user_text, pcm)
-            ex["_meta"] = {
-                "id": f"synthetic_{category}_{i}",
-                "category": category,
-                "language": rng.choice(cfg.get("language", ["es"])),
-                "source": "synthetic",
-            }
-            examples.append(ex)
+                user_text = prompt_tpl.format(**ctx)
+                pcm = pcm_tpl.format(**ctx)
+                ok, errors = validate_pcm_output(pcm)
+                if not ok:
+                    continue
+                ex = build_chat_example(user_text, pcm)
+                ex["_meta"] = {
+                    "id": f"synthetic_{category}_{variant_idx}_{i}",
+                    "category": category,
+                    "language": "es" if i % 2 == 0 else "en",
+                    "source": "synthetic",
+                }
+                examples.append(ex)
     return examples
 
 

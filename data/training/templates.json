@@ -11,28 +11,43 @@
       "TASK=analyze INPUT={input} CHECK=security,perf,code_smells FORMAT=json",
       "TASK=review INPUT={input} CHECK=logic,anti_patterns,perf FORMAT=list"
     ],
-    "inputs": ["python", "javascript", "rust", "go"]
+    "inputs": ["python", "javascript", "rust", "go", "java", "typescript"]
   },
   "translation": {
     "language": ["es", "en"],
     "prompts": [
-      "Traduce este documento técnico del {from_lang} al {to_lang} manteniendo terminología especializada y tono formal.",
-      "Please translate this legal contract from {from_lang} to {to_lang}, preserving formal style and legal terminology."
+      "Traduce este documento {domain} del {from_lang} al {to_lang} manteniendo terminología especializada y tono formal.",
+      "Please translate this {domain} document from {from_lang} to {to_lang}, preserving formal style and specialized terminology."
     ],
     "pcm_templates": [
-      "TASK=translate FROM={from_lang} TO={to_lang} STYLE=formal DOMAIN=technical",
-      "TASK=translate FROM={from_lang} TO={to_lang} STYLE=formal DOMAIN=legal"
-    ]
+      "TASK=translate FROM={from_lang} TO={to_lang} STYLE=formal DOMAIN={domain}",
+      "TASK=translate FROM={from_lang} TO={to_lang} STYLE=formal DOMAIN={domain}"
+    ],
+    "domains": ["technical", "legal", "marketing", "medical"]
   },
   "summarization": {
     "language": ["es", "en"],
-    "prompts": [
-      "Genera un resumen ejecutivo de este informe trimestral destacando métricas clave y conclusiones principales en formato lista.",
-      "Summarize this research paper highlighting methodology, findings, and limitations. Use bullet points."
-    ],
-    "pcm_templates": [
-      "TASK=summarize INPUT=quarterly_report FORMAT=list HIGHLIGHT=metrics,conclusions",
-      "TASK=summarize INPUT=research_paper FORMAT=list HIGHLIGHT=methodology,findings,limitations"
+    "documents": [
+      {
+        "prompt": "Genera un resumen ejecutivo de este informe trimestral destacando métricas clave y conclusiones principales en formato lista.",
+        "pcm": "TASK=summarize INPUT=quarterly_report FORMAT=list HIGHLIGHT=metrics,conclusions"
+      },
+      {
+        "prompt": "Summarize this research paper highlighting methodology, findings, and limitations. Use bullet points.",
+        "pcm": "TASK=summarize INPUT=research_paper FORMAT=list HIGHLIGHT=methodology,findings,limitations"
+      },
+      {
+        "prompt": "Prepara un resumen del acta de reunión enfocándote en decisiones tomadas, responsables y próximos pasos.",
+        "pcm": "TASK=summarize INPUT=meeting_minutes FORMAT=list HIGHLIGHT=decisions,owners,next_steps"
+      },
+      {
+        "prompt": "Create an executive summary of this annual financial report with key metrics and strategic highlights.",
+        "pcm": "TASK=summarize INPUT=annual_report FORMAT=list HIGHLIGHT=metrics,strategic_highlights"
+      },
+      {
+        "prompt": "Resume este artículo de noticias destacando hechos, contexto y posibles implicaciones.",
+        "pcm": "TASK=summarize INPUT=news_article FORMAT=list HIGHLIGHT=facts,context,implications"
+      }
     ]
   },
   "explanation": {
@@ -44,7 +59,7 @@
     "pcm_templates": [
       "TASK=explain TOPIC={topic} AUDIENCE=beginner STYLE=simple USE=analogies,examples"
     ],
-    "topics": ["blockchain", "machine_learning", "quantum_computing", "neural_networks"]
+    "topics": ["blockchain", "machine_learning", "quantum_computing", "neural_networks", "cybersecurity", "cloud_computing"]
   },
   "writing": {
     "language": ["es", "en"],
@@ -68,7 +83,7 @@
       "TASK=compare ITEMS={item_a},{item_b} CRITERIA=time_complexity,space_complexity,use_cases",
       "TASK=compare ITEMS={item_a},{item_b} CRITERIA=scalability,learning_curve,ecosystem"
     ],
-    "pairs": [["redis", "memcached"], ["docker", "kubernetes"], ["sql", "nosql"]]
+    "pairs": [["redis", "memcached"], ["docker", "kubernetes"], ["sql", "nosql"], ["graphql", "rest"], ["kafka", "rabbitmq"]]
   },
   "planning": {
     "language": ["es", "en"],
