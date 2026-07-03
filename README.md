@@ -175,6 +175,10 @@ response = client.chat.completions.create(
 print(response.choices[0].message.content)
 ```
 
+## Fase 3 — Fine-tuning local (Mac Apple Silicon)
+
+Ver [docs/fase3-finetuning.md](docs/fase3-finetuning.md).
+
 ## Tests
 
 ### CI local (rápido, sin Ollama)
