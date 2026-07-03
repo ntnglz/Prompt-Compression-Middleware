@@ -53,8 +53,8 @@ def main() -> int:
     parser.add_argument(
         "--reasoning-effort",
         default="high",
-        choices=["low", "medium", "high"],
-        help="Esfuerzo de razonamiento de Mistral Medium 3.5",
+        choices=["high", "none"],
+        help="Reasoning de mistral-medium-3.5 (solo high o none; medium/low no soportados)",
     )
     parser.add_argument(
         "--max-tokens",
