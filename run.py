@@ -11,6 +11,7 @@ Uso:
     python run.py --stdio            # Inicia servidor MCP (stdio)
     python run.py --mcp-http         # Inicia servidor MCP HTTP en /mcp
     python run.py --mcp-http --port 8001
+    python run.py --proxy            # Proxy OpenAI-compatible (puerto 8090)
     python run.py --test             # Ejecuta tests
     python run.py --check-deps       # Verificar dependencias
     python run.py --benchmark        # Benchmark sobre example_prompts.json
@@ -52,6 +53,12 @@ def run_benchmark(extra_args=None):
     if extra_args:
         cmd.extend(extra_args)
     sys.exit(subprocess.call(cmd))
+
+
+def run_proxy_server(port=None):
+    """Ejecuta el proxy HTTP compatible con OpenAI"""
+    from main import run_proxy_server as _run_proxy_server, DEFAULT_PROXY_PORT
+    _run_proxy_server(port or DEFAULT_PROXY_PORT)
 
 
 def run_tests():
@@ -128,7 +135,7 @@ def check_dependencies():
 def main():
     """Punto de entrada principal"""
     import argparse
-    from main import DEFAULT_MODEL, DEFAULT_PORT, DEFAULT_MCP_HTTP_HOST, DEFAULT_MCP_HTTP_PORT
+    from main import DEFAULT_MODEL, DEFAULT_PORT, DEFAULT_MCP_HTTP_HOST, DEFAULT_MCP_HTTP_PORT, DEFAULT_PROXY_PORT
     
     parser = argparse.ArgumentParser(
         description="PCM MCP Server - Script de Ejecución",
@@ -139,6 +146,7 @@ Ejemplos:
   python run.py --http             # API REST en puerto 8080
   python run.py --stdio            # MCP stdio
   python run.py --mcp-http         # MCP HTTP en http://localhost:8001/mcp
+  python run.py --proxy            # Proxy PCM en http://localhost:8090/v1/chat/completions
   python run.py --test             # Ejecutar tests
   python run.py --benchmark        # Benchmark de compresión
   python run.py --check-deps       # Verificar dependencias
@@ -150,11 +158,12 @@ Ejemplos:
     group.add_argument("--http", action="store_true", help="Iniciar API REST (FastAPI)")
     group.add_argument("--stdio", action="store_true", help="Iniciar servidor MCP (stdio)")
     group.add_argument("--mcp-http", action="store_true", help="Iniciar servidor MCP (streamable-http en /mcp)")
+    group.add_argument("--proxy", action="store_true", help="Iniciar proxy OpenAI-compatible (PCM → upstream)")
     group.add_argument("--test", action="store_true", help="Ejecutar tests")
     group.add_argument("--benchmark", action="store_true", help="Ejecutar benchmark de compresión")
     group.add_argument("--check-deps", action="store_true", help="Verificar dependencias")
     
-    parser.add_argument("--port", type=int, default=None, help="Puerto (8080 REST, 8001 MCP HTTP por defecto)")
+    parser.add_argument("--port", type=int, default=None, help="Puerto (8080 REST, 8001 MCP HTTP, 8090 proxy)")
     parser.add_argument("--host", type=str, default=None, help="Host para MCP HTTP (por defecto: 0.0.0.0)")
     parser.add_argument("--model", type=str, default=DEFAULT_MODEL, help="Modelo Ollama a usar")
     
@@ -187,6 +196,10 @@ Ejemplos:
             host=args.host or DEFAULT_MCP_HTTP_HOST,
             port=args.port or DEFAULT_MCP_HTTP_PORT,
         )
+        return
+
+    if args.proxy:
+        run_proxy_server(args.port or DEFAULT_PROXY_PORT)
         return
     
     # Por defecto o --http: API REST

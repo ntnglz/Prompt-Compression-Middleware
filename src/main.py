@@ -40,6 +40,7 @@ DEFAULT_MCP_HTTP_HOST = os.getenv("MCP_HTTP_HOST", "0.0.0.0")
 DEFAULT_MCP_HTTP_PORT = int(os.getenv("MCP_HTTP_PORT", "8001"))
 DEFAULT_TEMPERATURE = float(os.getenv("COMPRESSOR_TEMPERATURE", "0.1"))
 DEFAULT_TIMEOUT = int(os.getenv("COMPRESSOR_TIMEOUT", "120"))
+DEFAULT_PROXY_PORT = int(os.getenv("PCM_PROXY_PORT", "8090"))
 
 # Importar después de configurar logging
 try:
@@ -202,6 +203,114 @@ def run_http_server(port: int = 8080):
     )
 
 
+def run_proxy_server(port: int = DEFAULT_PROXY_PORT):
+    """Ejecuta el proxy HTTP compatible con OpenAI (/v1/chat/completions)."""
+    from fastapi import FastAPI, HTTPException, Request
+    from fastapi.middleware.cors import CORSMiddleware
+    from fastapi.responses import JSONResponse
+    import httpx
+    import uvicorn
+
+    from pcm.proxy import ChatProxy, ProxyConfig
+
+    proxy = ChatProxy(compressor, ProxyConfig.from_env())
+
+    proxy_app = FastAPI(
+        title="PCM Proxy",
+        description="Prompt Compression Middleware - Proxy OpenAI-compatible",
+        version="0.2.0",
+    )
+
+    proxy_app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
+    @proxy_app.get("/health")
+    async def proxy_health():
+        return {
+            "status": "ok",
+            "mode": "proxy",
+            "upstream": proxy.config.upstream_base_url,
+            "default_model": proxy.config.default_model,
+            "compress_roles": sorted(proxy.config.compress_roles),
+        }
+
+    @proxy_app.get("/v1/models")
+    async def proxy_models():
+        model_id = proxy.config.default_model
+        return {
+            "object": "list",
+            "data": [
+                {
+                    "id": model_id,
+                    "object": "model",
+                    "owned_by": "pcm-proxy",
+                }
+            ],
+        }
+
+    @proxy_app.post("/v1/chat/completions")
+    async def proxy_chat_completions(request: Request):
+        body = await request.json()
+        compress = request.headers.get("x-pcm-disable", "").lower() not in (
+            "1",
+            "true",
+            "yes",
+        )
+        try:
+            result, stats = await proxy.forward_chat_completion(
+                body,
+                compress=compress,
+            )
+        except httpx.HTTPStatusError as exc:
+            raise HTTPException(
+                status_code=exc.response.status_code,
+                detail=exc.response.text,
+            ) from exc
+        except RuntimeError as exc:
+            raise HTTPException(status_code=503, detail=str(exc)) from exc
+
+        response = JSONResponse(content=result)
+        for key, value in proxy.stats_as_headers(stats).items():
+            response.headers[key] = value
+        return response
+
+    @proxy_app.get("/")
+    async def proxy_root():
+        return {
+            "name": "PCM Proxy",
+            "version": "0.2.0",
+            "endpoints": [
+                {"path": "/v1/chat/completions", "method": "POST"},
+                {"path": "/v1/models", "method": "GET"},
+                {"path": "/health", "method": "GET"},
+            ],
+            "headers": {
+                "x-pcm-disable": "true para omitir compresión en una petición",
+            },
+            "response_headers": [
+                "X-PCM-Messages-Compressed",
+                "X-PCM-Compression-Ratio",
+                "X-PCM-Tokens-Saved",
+                "X-PCM-Compression-Time-Ms",
+            ],
+        }
+
+    logger.info(f"Iniciando PCM Proxy en http://localhost:{port}")
+    logger.info(f"Upstream: {proxy.config.upstream_base_url}")
+    logger.info(f"Endpoint: http://localhost:{port}/v1/chat/completions")
+
+    uvicorn.run(
+        proxy_app,
+        host="0.0.0.0",
+        port=port,
+        log_level="info",
+    )
+
+
 # ============================================================================
 # PUNTO DE ENTRADA PRINCIPAL
 # ============================================================================
@@ -218,6 +327,7 @@ Ejemplos:
   python src/main.py --http             # API REST (FastAPI)
   python src/main.py --stdio            # MCP por stdio
   python src/main.py --mcp-http         # MCP por HTTP en /mcp
+  python src/main.py --proxy            # Proxy OpenAI-compatible (puerto 8090)
   python src/main.py --mcp-http --port 8001
         """
     )
@@ -227,8 +337,9 @@ Ejemplos:
     group.add_argument("--http", action="store_true", help="Iniciar API REST (FastAPI)")
     group.add_argument("--stdio", action="store_true", help="Iniciar servidor MCP (stdio)")
     group.add_argument("--mcp-http", action="store_true", help="Iniciar servidor MCP (streamable-http en /mcp)")
+    group.add_argument("--proxy", action="store_true", help="Iniciar proxy OpenAI-compatible (PCM → upstream)")
     
-    parser.add_argument("--port", type=int, default=None, help="Puerto (8080 REST, 8001 MCP HTTP por defecto)")
+    parser.add_argument("--port", type=int, default=None, help="Puerto (8080 REST, 8001 MCP HTTP, 8090 proxy)")
     parser.add_argument("--host", type=str, default=None, help="Host para MCP HTTP (por defecto: 0.0.0.0)")
     parser.add_argument("--model", type=str, default=DEFAULT_MODEL, help="Modelo Ollama a usar")
     
@@ -247,6 +358,8 @@ Ejemplos:
             host=args.host or DEFAULT_MCP_HTTP_HOST,
             port=args.port or DEFAULT_MCP_HTTP_PORT,
         )
+    elif args.proxy:
+        run_proxy_server(args.port or DEFAULT_PROXY_PORT)
     else:
         run_http_server(args.port or DEFAULT_PORT)
 
