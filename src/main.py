@@ -214,6 +214,7 @@ def run_proxy_server(port: int = DEFAULT_PROXY_PORT):
     import uvicorn
 
     from pcm.proxy import ChatProxy, ProxyConfig
+    from pcm.upstream import list_configured_providers
 
     proxy = ChatProxy(compressor, ProxyConfig.from_env())
 
@@ -235,8 +236,9 @@ def run_proxy_server(port: int = DEFAULT_PROXY_PORT):
         return {
             "status": "ok",
             "mode": "proxy",
-            "upstream": proxy.config.upstream_base_url,
-            "default_model": proxy.config.default_model,
+            "default_provider": proxy.config.default_provider,
+            "configured_providers": list_configured_providers(),
+            "default_model": proxy.config.default_model or None,
             "compress_roles": sorted(proxy.config.compress_roles),
         }
 
@@ -262,10 +264,12 @@ def run_proxy_server(port: int = DEFAULT_PROXY_PORT):
             "true",
             "yes",
         )
+        provider_hint = request.headers.get("x-pcm-provider")
         try:
             result, stats = await proxy.forward_chat_completion(
                 body,
                 compress=compress,
+                provider_hint=provider_hint,
             )
         except httpx.HTTPStatusError as exc:
             raise HTTPException(
@@ -292,12 +296,15 @@ def run_proxy_server(port: int = DEFAULT_PROXY_PORT):
             ],
             "headers": {
                 "x-pcm-disable": "true para omitir compresión en una petición",
+                "x-pcm-provider": "mistral | openai | openrouter | custom",
             },
             "response_headers": [
                 "X-PCM-Messages-Compressed",
                 "X-PCM-Compression-Ratio",
                 "X-PCM-Tokens-Saved",
                 "X-PCM-Compression-Time-Ms",
+                "X-PCM-Upstream-Provider",
+                "X-PCM-Upstream-Model",
             ],
         }
 

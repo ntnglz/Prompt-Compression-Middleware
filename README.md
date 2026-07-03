@@ -66,6 +66,46 @@ curl -X POST http://localhost:8090/v1/chat/completions \
 
 Omitir compresión en una petición: `x-pcm-disable: true`
 
+## Multi-upstream
+
+El proxy soporta varios proveedores OpenAI-compatible:
+
+| Proveedor | Variable API key | URL por defecto | Modelo por defecto |
+|-----------|------------------|-----------------|-------------------|
+| `mistral` | `MISTRAL_API_KEY` | `https://api.mistral.ai/v1` | `mistral-medium-3.5` |
+| `openai` | `OPENAI_API_KEY` | `https://api.openai.com/v1` | `gpt-4o-mini` |
+| `openrouter` | `OPENROUTER_API_KEY` | `https://openrouter.ai/api/v1` | `openai/gpt-4o-mini` |
+| `custom` | `PCM_UPSTREAM_API_KEY` | `PCM_UPSTREAM_URL` | `PCM_UPSTREAM_MODEL` |
+
+### Selección de proveedor
+
+Prioridad:
+1. Header `x-pcm-provider: openai` (por petición)
+2. Auto-detección por modelo (`gpt-*` → OpenAI, `mistral-*` → Mistral)
+3. `PCM_UPSTREAM_PROVIDER` en `.env` (por defecto: `mistral`)
+
+```bash
+# Mistral (por defecto)
+curl -X POST http://localhost:8090/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{"messages":[{"role":"user","content":"Hola"}]}'
+
+# OpenAI explícito
+curl -X POST http://localhost:8090/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -H "x-pcm-provider: openai" \
+  -d '{"model":"gpt-4o-mini","messages":[{"role":"user","content":"Hola"}]}'
+
+# Auto-ruta a OpenAI por nombre de modelo
+curl -X POST http://localhost:8090/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{"model":"gpt-4o-mini","messages":[{"role":"user","content":"Hola"}]}'
+```
+
+Headers extra en respuesta: `X-PCM-Upstream-Provider`, `X-PCM-Upstream-Model`
+
+`reasoning_effort` solo se envía a Mistral (no a OpenAI).
+
 ## Desarrollo local (sin Docker)
 
 ```bash
@@ -99,13 +139,15 @@ python run.py --stdio          # MCP stdio
 
 | Variable | Default | Descripción |
 |----------|---------|-------------|
-| `MISTRAL_API_KEY` | — | Clave API upstream (requerida para proxy) |
+| `MISTRAL_API_KEY` | — | Clave Mistral |
+| `OPENAI_API_KEY` | — | Clave OpenAI |
+| `OPENROUTER_API_KEY` | — | Clave OpenRouter (opcional) |
+| `PCM_UPSTREAM_PROVIDER` | `mistral` | Proveedor por defecto |
 | `OLLAMA_MODEL` | `granite4.1:3b` | Modelo compresor local |
 | `OLLAMA_HOST` | `http://localhost:11434` | URL Ollama (`http://ollama:11434` en Docker) |
 | `PCM_PROXY_PORT` | `8090` | Puerto del proxy |
-| `PCM_UPSTREAM_URL` | `https://api.mistral.ai/v1` | API destino |
-| `PCM_UPSTREAM_MODEL` | `mistral-medium-3.5` | Modelo destino |
-| `PCM_REASONING_EFFORT` | `none` | `none` o `high` (mistral-medium-3.5) |
+| `PCM_UPSTREAM_MODEL` | — | Modelo destino (vacío = default del proveedor) |
+| `PCM_REASONING_EFFORT` | `none` | Solo Mistral: `none` o `high` |
 | `PCM_MIN_INSTRUCTION_TOKENS` | `12` | Umbral mínimo para comprimir |
 
 ## OpenAI SDK (Python)
@@ -113,9 +155,17 @@ python run.py --stdio          # MCP stdio
 ```python
 from openai import OpenAI
 
+# Mistral vía proxy
 client = OpenAI(
     base_url="http://localhost:8090/v1",
-    api_key="dummy",  # el proxy usa MISTRAL_API_KEY del entorno
+    api_key="dummy",
+    default_headers={"x-pcm-provider": "mistral"},
+)
+
+# OpenAI vía proxy (auto-ruta si model=gpt-4o-mini)
+client_openai = OpenAI(
+    base_url="http://localhost:8090/v1",
+    api_key="dummy",
 )
 
 response = client.chat.completions.create(

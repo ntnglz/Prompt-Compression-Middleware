@@ -7,6 +7,31 @@ import pytest
 from pcm.models import CompressionResult
 from pcm.prompt_utils import join_instruction_and_payload, split_instruction_and_payload
 from pcm.proxy import ChatProxy, ProxyConfig
+from pcm.upstream import UpstreamTarget
+
+
+@pytest.fixture
+def mistral_upstream():
+    return UpstreamTarget(
+        provider="mistral",
+        base_url="https://api.mistral.ai/v1",
+        api_key="mistral-key",
+        model="mistral-medium-3.5",
+        supports_reasoning_effort=True,
+        reasoning_effort="none",
+    )
+
+
+@pytest.fixture
+def openai_upstream():
+    return UpstreamTarget(
+        provider="openai",
+        base_url="https://api.openai.com/v1",
+        api_key="openai-key",
+        model="gpt-4o-mini",
+        supports_reasoning_effort=False,
+        reasoning_effort=None,
+    )
 
 
 @pytest.fixture
@@ -49,11 +74,12 @@ def test_join_instruction_and_payload():
 
 
 @pytest.mark.asyncio
-async def test_transform_request_compresses_user_and_keeps_code(mock_compressor):
+async def test_transform_request_compresses_user_and_keeps_code(
+    mock_compressor, mistral_upstream
+):
     proxy = ChatProxy(
         mock_compressor,
         ProxyConfig(
-            upstream_api_key="test-key",
             inject_pcm_system=True,
             compress_roles=frozenset({"user"}),
             min_instruction_tokens=3,
@@ -68,7 +94,9 @@ async def test_transform_request_compresses_user_and_keeps_code(mock_compressor)
         ]
     }
 
-    transformed, stats = await proxy.transform_request(body)
+    transformed, stats = await proxy.transform_request(
+        body, upstream=mistral_upstream
+    )
 
     user_msg = next(m for m in transformed["messages"] if m["role"] == "user")
     assert user_msg["content"].startswith("TASK=review INPUT=python")
@@ -76,18 +104,18 @@ async def test_transform_request_compresses_user_and_keeps_code(mock_compressor)
     assert "x = 1" in user_msg["content"]
     assert stats.messages_compressed == 1
     assert stats.tokens_saved == 6
+    assert stats.upstream_provider == "mistral"
     mock_compressor.compress.assert_called_once_with("Analiza este código Python.")
 
 
 @pytest.mark.asyncio
-async def test_transform_request_injects_pcm_system_prompt(mock_compressor):
-    proxy = ChatProxy(
-        mock_compressor,
-        ProxyConfig(upstream_api_key="test-key"),
-    )
+async def test_transform_request_injects_pcm_system_prompt(
+    mock_compressor, mistral_upstream
+):
+    proxy = ChatProxy(mock_compressor, ProxyConfig())
     body = {"messages": [{"role": "user", "content": "Hola"}]}
 
-    transformed, _ = await proxy.transform_request(body)
+    transformed, _ = await proxy.transform_request(body, upstream=mistral_upstream)
 
     system_msgs = [m for m in transformed["messages"] if m["role"] == "system"]
     assert len(system_msgs) == 1
@@ -95,14 +123,15 @@ async def test_transform_request_injects_pcm_system_prompt(mock_compressor):
 
 
 @pytest.mark.asyncio
-async def test_transform_request_skips_compression_when_disabled(mock_compressor):
-    proxy = ChatProxy(
-        mock_compressor,
-        ProxyConfig(upstream_api_key="test-key"),
-    )
+async def test_transform_request_skips_compression_when_disabled(
+    mock_compressor, mistral_upstream
+):
+    proxy = ChatProxy(mock_compressor, ProxyConfig())
     body = {"messages": [{"role": "user", "content": "No comprimir esto"}]}
 
-    transformed, stats = await proxy.transform_request(body, compress=False)
+    transformed, stats = await proxy.transform_request(
+        body, upstream=mistral_upstream, compress=False
+    )
 
     user_msg = next(m for m in transformed["messages"] if m["role"] == "user")
     assert user_msg["content"] == "No comprimir esto"
@@ -111,36 +140,47 @@ async def test_transform_request_skips_compression_when_disabled(mock_compressor
 
 
 @pytest.mark.asyncio
-async def test_transform_request_sets_default_model_and_reasoning(mock_compressor):
+async def test_transform_request_sets_mistral_reasoning(
+    mock_compressor, mistral_upstream
+):
     proxy = ChatProxy(
         mock_compressor,
-        ProxyConfig(
-            upstream_api_key="test-key",
-            default_model="mistral-medium-3.5",
-            reasoning_effort="none",
-        ),
+        ProxyConfig(reasoning_effort="none"),
     )
     body = {"messages": [{"role": "user", "content": "Hola"}]}
 
-    transformed, _ = await proxy.transform_request(body)
+    transformed, _ = await proxy.transform_request(body, upstream=mistral_upstream)
 
     assert transformed["model"] == "mistral-medium-3.5"
     assert transformed["reasoning_effort"] == "none"
 
 
 @pytest.mark.asyncio
-async def test_transform_skips_short_instruction(mock_compressor):
+async def test_transform_request_strips_reasoning_for_openai(
+    mock_compressor, openai_upstream
+):
+    proxy = ChatProxy(mock_compressor, ProxyConfig(reasoning_effort="none"))
+    body = {
+        "messages": [{"role": "user", "content": "Hola"}],
+        "reasoning_effort": "high",
+    }
+
+    transformed, _ = await proxy.transform_request(body, upstream=openai_upstream)
+
+    assert transformed["model"] == "gpt-4o-mini"
+    assert "reasoning_effort" not in transformed
+
+
+@pytest.mark.asyncio
+async def test_transform_skips_short_instruction(mock_compressor, mistral_upstream):
     proxy = ChatProxy(
         mock_compressor,
-        ProxyConfig(
-            upstream_api_key="test-key",
-            min_instruction_tokens=12,
-        ),
+        ProxyConfig(min_instruction_tokens=12),
     )
     original = "Explica qué es un middleware en una frase."
     body = {"messages": [{"role": "user", "content": original}]}
 
-    transformed, stats = await proxy.transform_request(body)
+    transformed, stats = await proxy.transform_request(body, upstream=mistral_upstream)
 
     user_msg = next(m for m in transformed["messages"] if m["role"] == "user")
     assert user_msg["content"] == original
@@ -149,7 +189,7 @@ async def test_transform_skips_short_instruction(mock_compressor):
 
 
 @pytest.mark.asyncio
-async def test_transform_skips_when_pcm_is_longer(mock_compressor):
+async def test_transform_skips_when_pcm_is_longer(mock_compressor, mistral_upstream):
     mock_compressor.compress.return_value = CompressionResult(
         original_prompt="Explica qué es un middleware en una frase larga para revisar.",
         compressed_prompt="TASK=explain TOPIC=middleware FORMAT=one_sentence STYLE=verbose",
@@ -161,15 +201,12 @@ async def test_transform_skips_when_pcm_is_longer(mock_compressor):
     )
     proxy = ChatProxy(
         mock_compressor,
-        ProxyConfig(
-            upstream_api_key="test-key",
-            min_instruction_tokens=3,
-        ),
+        ProxyConfig(min_instruction_tokens=3),
     )
     original = "Explica qué es un middleware en una frase larga para revisar."
     body = {"messages": [{"role": "user", "content": original}]}
 
-    transformed, stats = await proxy.transform_request(body)
+    transformed, stats = await proxy.transform_request(body, upstream=mistral_upstream)
 
     user_msg = next(m for m in transformed["messages"] if m["role"] == "user")
     assert user_msg["content"] == original

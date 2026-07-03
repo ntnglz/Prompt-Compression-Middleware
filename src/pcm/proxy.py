@@ -17,15 +17,15 @@ from .compressor import PromptCompressor
 from .compression_policy import CompressionPolicy
 from .e2e_benchmark import MISTRAL_PCM_SYSTEM_PROMPT
 from .prompt_utils import join_instruction_and_payload, split_instruction_and_payload
+from .upstream import UpstreamTarget, list_configured_providers, resolve_upstream
 
 logger = logging.getLogger(__name__)
 
 
 @dataclass
 class ProxyConfig:
-    upstream_base_url: str = "https://api.mistral.ai/v1"
-    upstream_api_key: str = ""
-    default_model: str = "mistral-medium-3.5"
+    default_provider: str = "mistral"
+    default_model: str = ""
     reasoning_effort: str = "none"
     compress_roles: frozenset[str] = frozenset({"user"})
     inject_pcm_system: bool = True
@@ -38,11 +38,8 @@ class ProxyConfig:
         roles = os.getenv("PCM_COMPRESS_ROLES", "user")
         policy = CompressionPolicy.from_env()
         return cls(
-            upstream_base_url=os.getenv(
-                "PCM_UPSTREAM_URL", "https://api.mistral.ai/v1"
-            ).rstrip("/"),
-            upstream_api_key=os.getenv("MISTRAL_API_KEY", ""),
-            default_model=os.getenv("PCM_UPSTREAM_MODEL", "mistral-medium-3.5"),
+            default_provider=os.getenv("PCM_UPSTREAM_PROVIDER", "mistral"),
+            default_model=os.getenv("PCM_UPSTREAM_MODEL", ""),
             reasoning_effort=os.getenv("PCM_REASONING_EFFORT", "none"),
             compress_roles=frozenset(r.strip() for r in roles.split(",") if r.strip()),
             inject_pcm_system=os.getenv("PCM_INJECT_SYSTEM", "true").lower()
@@ -58,6 +55,8 @@ class ProxyCompressionStats:
     original_tokens: int = 0
     compressed_tokens: int = 0
     compression_time_ms: float = 0.0
+    upstream_provider: str = ""
+    upstream_model: str = ""
     per_message: list[dict[str, Any]] = field(default_factory=list)
 
     @property
@@ -81,9 +80,10 @@ class ChatProxy:
     ) -> None:
         self.compressor = compressor
         self.config = config or ProxyConfig.from_env()
-        if not self.config.upstream_api_key:
+        if not list_configured_providers():
             logger.warning(
-                "MISTRAL_API_KEY no configurada; el proxy no podrá reenviar peticiones."
+                "Ningún proveedor upstream configurado. "
+                "Define MISTRAL_API_KEY, OPENAI_API_KEY u OPENROUTER_API_KEY."
             )
 
     def _normalize_content(self, content: Any) -> str:
@@ -180,15 +180,35 @@ class ChatProxy:
         }
         return out
 
+    def _prepare_upstream_body(
+        self,
+        body: dict[str, Any],
+        upstream: UpstreamTarget,
+    ) -> dict[str, Any]:
+        prepared = dict(body)
+        prepared["model"] = body.get("model") or upstream.model
+
+        if upstream.supports_reasoning_effort and upstream.reasoning_effort:
+            if "reasoning_effort" not in prepared:
+                prepared["reasoning_effort"] = upstream.reasoning_effort
+        else:
+            prepared.pop("reasoning_effort", None)
+
+        return prepared
+
     async def transform_request(
         self,
         body: dict[str, Any],
         *,
+        upstream: UpstreamTarget,
         compress: bool = True,
     ) -> tuple[dict[str, Any], ProxyCompressionStats]:
         """Comprime roles configurados y prepara el body para upstream."""
-        stats = ProxyCompressionStats()
-        transformed = dict(body)
+        stats = ProxyCompressionStats(
+            upstream_provider=upstream.provider,
+            upstream_model=upstream.model,
+        )
+        transformed = self._prepare_upstream_body(body, upstream)
         messages = [dict(m) for m in body.get("messages", [])]
 
         if compress:
@@ -221,15 +241,6 @@ class ChatProxy:
         messages = self._inject_pcm_system(messages)
         transformed["messages"] = messages
 
-        if "model" not in transformed or not transformed["model"]:
-            transformed["model"] = self.config.default_model
-
-        if (
-            "reasoning_effort" not in transformed
-            and self.config.reasoning_effort
-        ):
-            transformed["reasoning_effort"] = self.config.reasoning_effort
-
         return transformed, stats
 
     async def forward_chat_completion(
@@ -237,17 +248,25 @@ class ChatProxy:
         body: dict[str, Any],
         *,
         compress: bool = True,
+        provider_hint: Optional[str] = None,
     ) -> tuple[dict[str, Any], ProxyCompressionStats]:
         """Comprime, reenvía a upstream y devuelve la respuesta."""
-        if not self.config.upstream_api_key:
-            raise RuntimeError(
-                "MISTRAL_API_KEY no configurada. Añádela a .env para usar el proxy."
-            )
+        upstream = resolve_upstream(
+            provider_hint=provider_hint,
+            model=body.get("model"),
+            default_provider=self.config.default_provider,
+            default_model=self.config.default_model or None,
+            reasoning_effort=self.config.reasoning_effort,
+        )
 
-        transformed, stats = await self.transform_request(body, compress=compress)
-        url = f"{self.config.upstream_base_url}/chat/completions"
+        transformed, stats = await self.transform_request(
+            body,
+            upstream=upstream,
+            compress=compress,
+        )
+        url = f"{upstream.base_url}/chat/completions"
         headers = {
-            "Authorization": f"Bearer {self.config.upstream_api_key}",
+            "Authorization": f"Bearer {upstream.api_key}",
             "Content-Type": "application/json",
         }
 
@@ -259,7 +278,9 @@ class ChatProxy:
 
         stats.compression_time_ms = round(stats.compression_time_ms, 2)
         logger.info(
-            "Proxy OK model=%s compressed=%s ratio=%.1f%% saved=%s tokens upstream=%.0fms",
+            "Proxy OK provider=%s model=%s compressed=%s ratio=%.1f%% "
+            "saved=%s tokens upstream=%.0fms",
+            upstream.provider,
             transformed.get("model"),
             stats.messages_compressed,
             stats.compression_ratio * 100,
@@ -269,9 +290,14 @@ class ChatProxy:
         return payload, stats
 
     def stats_as_headers(self, stats: ProxyCompressionStats) -> dict[str, str]:
-        return {
+        headers = {
             "X-PCM-Messages-Compressed": str(stats.messages_compressed),
             "X-PCM-Compression-Ratio": f"{stats.compression_ratio:.4f}",
             "X-PCM-Tokens-Saved": str(stats.tokens_saved),
             "X-PCM-Compression-Time-Ms": f"{stats.compression_time_ms:.2f}",
         }
+        if stats.upstream_provider:
+            headers["X-PCM-Upstream-Provider"] = stats.upstream_provider
+        if stats.upstream_model:
+            headers["X-PCM-Upstream-Model"] = stats.upstream_model
+        return headers
