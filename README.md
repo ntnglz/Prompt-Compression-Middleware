@@ -1,188 +1,151 @@
 # Prompt Compression Middleware (PCM)
 
-> *Compresión semántica de prompts para optimizar la comunicación con LLM*
-
----
-
-## 📌 Descripción
-
-**Prompt Compression Middleware (PCM)** es una capa intermedia que comprime prompts en lenguaje natural en representaciones más compactas **optimizadas específicamente para LLM**, no para humanos.
-
-A diferencia de un resumen tradicional (que preserva legibilidad para personas), PCM realiza **compresión semántica** que preserva la intención, el contexto y las restricciones del prompt mientras elimina redundancias y utiliza representaciones más eficientes para el modelo de destino.
-
----
-
-## 🎯 Objetivo Principal
-
-Reducir el número de tokens intercambiados entre agentes y modelos **sin degradar significativamente la calidad de las respuestas**, abordando problemas como:
-
-- Contextos RAG de cientos de miles de tokens
-- Conversaciones largas con gran cantidad de historial
-- Agentes que intercambian información continuamente
-- Pipelines con múltiples llamadas al mismo modelo
-- Costes crecientes en aplicaciones empresariales
-
----
-
-## 📁 Estructura de la Carpeta
+Middleware que comprime instrucciones en lenguaje natural a formato **PCM** (`TASK=review INPUT=python...`) antes de enviarlas a un LLM destino, preservando payloads (código, documentos) sin modificar.
 
 ```
-Prompt Compression Middleware/
-├── README.md                                            # Este documento
-├── MCP de compresion de prompts para LLM.md          # Documento original - Concepto
-├── MCP de compresion de prompts para LLM v2.md       # Roadmap de implementación
-└── Analisis de viabilidad y plan de implementacion.md # Análisis detallado y opciones
+Cliente → PCM Proxy (:8090) → Mistral / OpenAI-compatible API
+              ↓
+         Ollama (compresor local)
 ```
 
----
+## Requisitos
 
-## 🚀 Roadmap de Implementación
+- [Docker](https://docs.docker.com/get-docker/) y Docker Compose
+- Clave API de [Mistral](https://console.mistral.ai/) (u otro proveedor compatible)
 
-El proyecto se puede abordar de forma incremental en 4 fases:
+## Inicio rápido con Docker
 
-### Fase 1: Prototipo
-Validar el concepto básico usando un LLM pequeño (1.5B-4B parámetros) como compresor.
+```bash
+git clone https://github.com/ntnglz/Prompt-Compression-Middleware.git
+cd Prompt-Compression-Middleware
 
-**Modelos candidatos:**
-- Qwen 2.5 / Qwen 3 (1.5B-4B)
-- Gemma 3 (4B)
-- Phi-4 Mini
-- Llama 3.x (3B)
+cp .env.example .env
+# Edita .env y añade MISTRAL_API_KEY=...
 
-**Métricas a validar:**
-- Ratio de compresión
-- Tiempo adicional introducido
-- Coste total
-- Calidad de la respuesta final
-
----
-
-### Fase 2: Compresor Especializado
-Sustituir el LLM genérico por un modelo afinado (LoRA o Fine-Tuning) cuya única tarea sea la compresión de prompts.
-
-**Entradas:** Prompt original  
-**Salidas:** Prompt comprimido  
-
-El modelo aprendería patrones de reescritura mucho más eficientes que un prompt estático.
-
----
-
-### Fase 3: Entrenamiento mediante RL
-Optimizar el compresor utilizando un modelo grande como evaluador.
-
-**Función de recompensa:**
-- Máxima reducción de tokens
-- Mínima pérdida semántica
-- Máxima similitud entre respuestas
-
----
-
-### Fase 4: Lenguaje Intermedio (LLM IR)
-Desarrollar una **LLM Intermediate Representation** análoga a LLVM IR para compiladores.
-
-**Características deseables:**
-- Muy compacta
-- Semánticamente estable
-- Independiente del idioma humano
-- Fácilmente interpretable por distintos LLM
-- Optimizable para modelos concretos
-
----
-
-## 💡 Ejemplo de Compresión
-
-**Prompt original:**
-```
-Analiza cuidadosamente este código buscando posibles condiciones de carrera, fugas de memoria y oportunidades de optimización. Devuelve un informe en Markdown organizado por severidad.
+docker compose up --build
 ```
 
-**Prompt comprimido (PCM):**
-```
-TASK=review
-INPUT=code
-CHECK=race,leak,perf
-FORMAT=markdown
-ORDER=severity
-```
+La primera vez descargará el modelo `granite4.1:3b` en Ollama (puede tardar).
 
----
+**Proxy listo en:** `http://localhost:8090/v1/chat/completions`
 
-## 📊 Casos de Uso
+### Health check
 
-| Caso de Uso | Descripción | Potencial |
-|-------------|-------------|-----------|
-| **Sistemas RAG** | Compresión de contextos largos antes de enviar al LLM | ⭐⭐⭐⭐⭐ |
-| **Agentes autónomos** | Reducción de tokens en comunicaciones entre agentes | ⭐⭐⭐⭐ |
-| **Copilots de programación** | Optimización de prompts de revisión de código | ⭐⭐⭐ |
-| **Automatización empresarial** | Reducción de costes en workflows con múltiples llamadas | ⭐⭐⭐⭐ |
-| **Chatbots** | Compresión de conversaciones largas | ⭐⭐⭐ |
-| **Análisis documental** | Procesamiento eficiente de documentos extensos | ⭐⭐⭐⭐ |
-| **Workflows multiagente** | Optimización de comunicaciones en sistemas complejos | ⭐⭐⭐⭐ |
-
----
-
-## 🔧 Arquitecturas Propuestas
-
-### 1. Middleware Transparente
-```
-Agente
-    ↓
-PCM
-    ↓
-Claude / GPT / Gemini
+```bash
+curl http://localhost:8090/health
 ```
 
-### 2. Skill
-El compresor como una habilidad más del agente:
+### Ejemplo
+
+```bash
+# Prompt largo → se comprime
+curl -X POST http://localhost:8090/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "messages": [{
+      "role": "user",
+      "content": "Analiza este código Python buscando race conditions.\n\n```python\nCACHE = {}\n```"
+    }]
+  }' -D - -o /dev/null | grep -i x-pcm
+
+# Prompt corto (< 12 tokens) → no se comprime
+curl -X POST http://localhost:8090/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{"messages":[{"role":"user","content":"Hola, responde en una línea."}]}' \
+  -D - -o /dev/null | grep -i x-pcm
+```
+
+### Headers de respuesta PCM
+
+| Header | Descripción |
+|--------|-------------|
+| `X-PCM-Messages-Compressed` | Mensajes comprimidos en la petición |
+| `X-PCM-Compression-Ratio` | Ratio de ahorro (0 si omitido) |
+| `X-PCM-Tokens-Saved` | Tokens ahorrados en input |
+| `X-PCM-Compression-Time-Ms` | Tiempo de compresión (Ollama) |
+
+Omitir compresión en una petición: `x-pcm-disable: true`
+
+## Desarrollo local (sin Docker)
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+
+# Ollama en el host con granite4.1:3b
+ollama pull granite4.1:3b
+
+cp .env.example .env
+# MISTRAL_API_KEY=...
+
+python run.py --proxy          # Proxy → :8090
+python run.py --http           # API REST → :8080
+python run.py --mcp-http       # MCP HTTP → :8001/mcp
+python run.py --stdio          # MCP stdio
+```
+
+## Modos de ejecución
+
+| Comando | Puerto | Uso |
+|---------|--------|-----|
+| `python run.py --proxy` | 8090 | **Producción** — proxy OpenAI-compatible |
+| `python run.py --http` | 8080 | API REST de compresión directa |
+| `python run.py --mcp-http` | 8001 | Servidor MCP |
+| `python run.py --benchmark` | — | Benchmark compresor |
+| `scripts/e2e_benchmark.py` | — | Benchmark E2E con Mistral API |
+
+## Configuración (`.env`)
+
+| Variable | Default | Descripción |
+|----------|---------|-------------|
+| `MISTRAL_API_KEY` | — | Clave API upstream (requerida para proxy) |
+| `OLLAMA_MODEL` | `granite4.1:3b` | Modelo compresor local |
+| `OLLAMA_HOST` | `http://localhost:11434` | URL Ollama (`http://ollama:11434` en Docker) |
+| `PCM_PROXY_PORT` | `8090` | Puerto del proxy |
+| `PCM_UPSTREAM_URL` | `https://api.mistral.ai/v1` | API destino |
+| `PCM_UPSTREAM_MODEL` | `mistral-medium-3.5` | Modelo destino |
+| `PCM_REASONING_EFFORT` | `none` | `none` o `high` (mistral-medium-3.5) |
+| `PCM_MIN_INSTRUCTION_TOKENS` | `12` | Umbral mínimo para comprimir |
+
+## OpenAI SDK (Python)
+
 ```python
-compress(prompt)
+from openai import OpenAI
+
+client = OpenAI(
+    base_url="http://localhost:8090/v1",
+    api_key="dummy",  # el proxy usa MISTRAL_API_KEY del entorno
+)
+
+response = client.chat.completions.create(
+    model="mistral-medium-3.5",
+    messages=[{"role": "user", "content": "Resume este informe anual..."}],
+)
+print(response.choices[0].message.content)
 ```
 
-### 3. Servidor MCP
-PCM implementado como servidor MCP reutilizable.
+## Tests
 
-**Herramientas propuestas:**
-- `compress_prompt`
-- `expand_prompt`
-- `estimate_tokens`
-- `compare_compression`
-- `optimize_for_model`
+```bash
+pytest tests/test_compression_policy.py tests/test_proxy.py tests/test_e2e_benchmark.py -q
+```
 
----
+## Estructura
 
-## 📈 Métricas Clave
+```
+src/pcm/
+  compressor.py      # Compresor Ollama → PCM
+  proxy.py           # Proxy HTTP
+  compression_policy.py  # Umbral mínimo / ahorro neto
+  mcp_server.py      # Servidor MCP
+scripts/
+  benchmark.py       # Benchmark compresor
+  e2e_benchmark.py   # Benchmark E2E Mistral
+data/
+  e2e_prompts.json   # Prompts E2E con payload
+```
 
-| Métrica | Objetivo |
-|---------|----------|
-| Ratio de compresión | >50% |
-| Ahorro de coste | Depende de API |
-| Ahorro de latencia | <10% overhead |
-| Calidad de la respuesta | >=95% del original |
-| Pérdida semántica estimada | <5% |
-| Recuperación de información relevante | >98% |
+## Licencia
 
----
-
-## 🎯 Visión a Largo Plazo
-
-El objetivo final no es únicamente reducir tokens. La visión consiste en introducir una **nueva capa de infraestructura para los ecosistemas de IA**, equivalente al papel que desempeñan los compiladores en la ingeniería del software.
-
-Así como un compilador transforma un lenguaje de alto nivel en una representación optimizada para una CPU, el **Prompt Compression Middleware** transformaría el lenguaje natural en una representación optimizada para un LLM determinado.
-
----
-
-## 📚 Documentación
-
-- **Concepto original:** [MCP de compresion de prompts para LLM.md](./MCP%20de%20compresion%20de%20prompts%20para%20LLM.md)
-- **Roadmap detallado:** [MCP de compresion de prompts para LLM v2.md](./MCP%20de%20compresion%20de%20prompts%20para%20LLM%20v2.md)
-- **Análisis de viabilidad:** [Analisis de viabilidad y plan de implementacion.md](./Analisis%20de%20viabilidad%20y%20plan%20de%20implementacion.md)
-
----
-
-## 🚀 Próximos Pasos
-
-Consulta el [análisis de viabilidad](Analisis%20de%20viabilidad%20y%20plan%20de%20implementacion.md) para ver las opciones de implementación detalladas y el plan recomendado.
-
----
-
-*Proyecto iniciado el 3 de julio de 2026*
+Prototipo de investigación — Fase 1/2 completadas.

@@ -1,0 +1,26 @@
+services:
+  ollama:
+    image: ollama/ollama:latest
+    volumes:
+      - ollama_data:/root/.ollama
+    restart: unless-stopped
+    # Descomenta para acceder a Ollama desde el host:
+    # ports:
+    #   - "11434:11434"
+
+  pcm-proxy:
+    build: .
+    depends_on:
+      - ollama
+    env_file:
+      - .env
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+      PCM_PROXY_PORT: 8090
+    ports:
+      - "${PCM_PROXY_PORT:-8090}:8090"
+    restart: unless-stopped
+    command: ["proxy"]
+
+volumes:
+  ollama_data:
