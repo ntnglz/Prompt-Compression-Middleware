@@ -13,6 +13,7 @@ Uso:
     python run.py --mcp-http --port 8001
     python run.py --proxy            # Proxy OpenAI-compatible (puerto 8090)
     python run.py --test             # Ejecuta tests
+    python run.py --test-fast        # Tests rápidos (sin Ollama)
     python run.py --check-deps       # Verificar dependencias
     python run.py --benchmark        # Benchmark sobre example_prompts.json
     python run.py --benchmark --semantic  # Benchmark con similitud semántica
@@ -61,7 +62,7 @@ def run_proxy_server(port=None):
     _run_proxy_server(port or DEFAULT_PROXY_PORT)
 
 
-def run_tests():
+def run_tests(fast: bool = False):
     """Ejecuta los tests"""
     print("=" * 60)
     print("PCM MCP Server - Ejecutando Tests")
@@ -75,8 +76,14 @@ def run_tests():
         print("pytest no está instalado. Instalando...")
         subprocess.check_call([sys.executable, "-m", "pip", "install", "pytest", "pytest-asyncio", "httpx", "--break-system-packages"])
     
+    args = ["-v", "tests/"]
+    if fast:
+        args = ["-m", "not integration", "-q", "--tb=short", "tests/"]
+        print("Modo rápido: sin tests de integración (Ollama)")
+        print()
+
     # Ejecutar tests
-    exit_code = pytest.main(["-v", "tests/"])
+    exit_code = pytest.main(args)
     sys.exit(exit_code)
 
 
@@ -148,6 +155,7 @@ Ejemplos:
   python run.py --mcp-http         # MCP HTTP en http://localhost:8001/mcp
   python run.py --proxy            # Proxy PCM en http://localhost:8090/v1/chat/completions
   python run.py --test             # Ejecutar tests
+  python run.py --test-fast        # Tests rápidos (sin Ollama)
   python run.py --benchmark        # Benchmark de compresión
   python run.py --check-deps       # Verificar dependencias
         """
@@ -160,6 +168,11 @@ Ejemplos:
     group.add_argument("--mcp-http", action="store_true", help="Iniciar servidor MCP (streamable-http en /mcp)")
     group.add_argument("--proxy", action="store_true", help="Iniciar proxy OpenAI-compatible (PCM → upstream)")
     group.add_argument("--test", action="store_true", help="Ejecutar tests")
+    group.add_argument(
+        "--test-fast",
+        action="store_true",
+        help="Ejecutar tests rápidos (sin integración Ollama)",
+    )
     group.add_argument("--benchmark", action="store_true", help="Ejecutar benchmark de compresión")
     group.add_argument("--check-deps", action="store_true", help="Verificar dependencias")
     
@@ -176,8 +189,12 @@ Ejemplos:
         check_dependencies()
         return
     
+    if args.test_fast:
+        run_tests(fast=True)
+        return
+
     if args.test:
-        run_tests()
+        run_tests(fast=False)
         return
 
     if args.benchmark:

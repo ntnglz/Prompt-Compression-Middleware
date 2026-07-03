@@ -177,8 +177,26 @@ print(response.choices[0].message.content)
 
 ## Tests
 
+### CI local (rápido, sin Ollama)
+
 ```bash
-pytest tests/test_compression_policy.py tests/test_proxy.py tests/test_e2e_benchmark.py -q
+./scripts/ci-local.sh
+# o
+python run.py --test-fast
+```
+
+### CI local completo (requiere Ollama)
+
+```bash
+./scripts/ci-local-full.sh
+# o
+python run.py --test
+```
+
+### Tests concretos
+
+```bash
+pytest tests/test_compression_policy.py tests/test_proxy.py -q
 ```
 
 ## Estructura
