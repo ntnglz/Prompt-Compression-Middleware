@@ -1,0 +1,106 @@
+{
+  "code_review": {
+    "language": ["es", "en"],
+    "prompts": [
+      "Revisa este código {lang} buscando bugs de concurrencia, fugas de memoria y cuellos de botella. Informe en Markdown por severidad.",
+      "Analyze this {lang} source code for security issues, performance problems, and maintainability concerns. Output as JSON.",
+      "Examina detenidamente el siguiente código {lang} e identifica errores lógicos, anti-patrones y mejoras de rendimiento. Formato lista."
+    ],
+    "pcm_templates": [
+      "TASK=review INPUT={input} CHECK=race,leak,perf FORMAT=markdown ORDER=severity",
+      "TASK=analyze INPUT={input} CHECK=security,perf,code_smells FORMAT=json",
+      "TASK=review INPUT={input} CHECK=logic,anti_patterns,perf FORMAT=list"
+    ],
+    "inputs": ["python", "javascript", "rust", "go"]
+  },
+  "translation": {
+    "language": ["es", "en"],
+    "prompts": [
+      "Traduce este documento técnico del {from_lang} al {to_lang} manteniendo terminología especializada y tono formal.",
+      "Please translate this legal contract from {from_lang} to {to_lang}, preserving formal style and legal terminology."
+    ],
+    "pcm_templates": [
+      "TASK=translate FROM={from_lang} TO={to_lang} STYLE=formal DOMAIN=technical",
+      "TASK=translate FROM={from_lang} TO={to_lang} STYLE=formal DOMAIN=legal"
+    ]
+  },
+  "summarization": {
+    "language": ["es", "en"],
+    "prompts": [
+      "Genera un resumen ejecutivo de este informe trimestral destacando métricas clave y conclusiones principales en formato lista.",
+      "Summarize this research paper highlighting methodology, findings, and limitations. Use bullet points."
+    ],
+    "pcm_templates": [
+      "TASK=summarize INPUT=quarterly_report FORMAT=list HIGHLIGHT=metrics,conclusions",
+      "TASK=summarize INPUT=research_paper FORMAT=list HIGHLIGHT=methodology,findings,limitations"
+    ]
+  },
+  "explanation": {
+    "language": ["es", "en"],
+    "prompts": [
+      "Explica qué es {topic} a un público principiante usando analogías y ejemplos cotidianos.",
+      "Explain {topic} to a non-technical audience with simple language and real-world examples."
+    ],
+    "pcm_templates": [
+      "TASK=explain TOPIC={topic} AUDIENCE=beginner STYLE=simple USE=analogies,examples"
+    ],
+    "topics": ["blockchain", "machine_learning", "quantum_computing", "neural_networks"]
+  },
+  "writing": {
+    "language": ["es", "en"],
+    "prompts": [
+      "Redacta un email profesional para un cliente potencial sobre nuestro servicio de {topic}. Debe ser conciso, destacar beneficios e incluir llamada a la acción.",
+      "Write a professional blog post introduction about {topic} for developers. Tone: informative and concise."
+    ],
+    "pcm_templates": [
+      "TASK=write TYPE=email TO=client TOPIC={topic} STYLE=professional TONE=concise INCLUDE=benefits,cta",
+      "TASK=write TYPE=blog TOPIC={topic} AUDIENCE=developers STYLE=informative TONE=concise"
+    ],
+    "topics": ["cloud_migration", "api_design", "devops_automation"]
+  },
+  "comparison": {
+    "language": ["es", "en"],
+    "prompts": [
+      "Compara {item_a} y {item_b} en complejidad temporal, espacial y casos de uso recomendados.",
+      "Compare {item_a} versus {item_b} regarding scalability, learning curve, and ecosystem."
+    ],
+    "pcm_templates": [
+      "TASK=compare ITEMS={item_a},{item_b} CRITERIA=time_complexity,space_complexity,use_cases",
+      "TASK=compare ITEMS={item_a},{item_b} CRITERIA=scalability,learning_curve,ecosystem"
+    ],
+    "pairs": [["redis", "memcached"], ["docker", "kubernetes"], ["sql", "nosql"]]
+  },
+  "planning": {
+    "language": ["es", "en"],
+    "prompts": [
+      "Crea un plan de proyecto para una app móvil con autenticación, chat en tiempo real y compartir imágenes.",
+      "Create a detailed roadmap for building a SaaS dashboard with role-based access, analytics, and export features."
+    ],
+    "pcm_templates": [
+      "TASK=create_plan TYPE=project DOMAIN=mobile_app FEATURES=auth,realtime_chat,image_sharing",
+      "TASK=create_plan TYPE=project DOMAIN=saas_dashboard FEATURES=rbac,analytics,export"
+    ]
+  },
+  "legal_review": {
+    "language": ["es", "en"],
+    "prompts": [
+      "Revisa este contrato y señala cláusulas problemáticas para el cliente, especialmente cancelación y penalizaciones.",
+      "Review this NDA and flag clauses that may be unfavorable to the receiving party, focusing on confidentiality scope and duration."
+    ],
+    "pcm_templates": [
+      "TASK=review INPUT=contract FOCUS=problematic_clauses CHECK=cancellation_terms,penalties",
+      "TASK=review INPUT=nda FOCUS=unfavorable_clauses CHECK=confidentiality_scope,duration"
+    ]
+  },
+  "database_design": {
+    "language": ["es", "en"],
+    "prompts": [
+      "Diseña un esquema de base de datos para una app e-commerce con usuarios, productos, pedidos y reseñas. Incluye relaciones e índices.",
+      "Design a database schema for a blogging platform with users, posts, comments, and tags. Optimize for read performance."
+    ],
+    "pcm_templates": [
+      "TASK=design SCHEMA=ecommerce ENTITIES=users,products,orders,reviews REQUIRE=relationships,indexes OPTIMIZE=performance",
+      "TASK=design SCHEMA=blog ENTITIES=users,posts,comments,tags REQUIRE=relationships,indexes OPTIMIZE=read_performance"
+    ]
+  }
+}
