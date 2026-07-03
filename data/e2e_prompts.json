@@ -1,0 +1,40 @@
+[
+  {
+    "id": "e2e_001",
+    "category": "code_review",
+    "language": "es",
+    "instruction": "Analiza cuidadosamente este código Python buscando posibles condiciones de carrera, fugas de memoria y oportunidades de optimización. Devuelve un informe en Markdown organizado por severidad.",
+    "payload": "import threading\n\nCACHE = {}\n\ndef get_user(user_id):\n    if user_id not in CACHE:\n        CACHE[user_id] = expensive_fetch(user_id)\n    return CACHE[user_id]\n\ndef expensive_fetch(user_id):\n    users = []\n    for i in range(100000):\n        users.append({\"id\": i, \"data\": \"x\" * 100})\n    return users[user_id % len(users)]\n\ncounter = 0\n\ndef increment():\n    global counter\n    val = counter\n    counter = val + 1\n\nthreads = [threading.Thread(target=increment) for _ in range(10)]\nfor t in threads:\n    t.start()\nfor t in threads:\n    t.join()",
+    "payload_type": "code",
+    "payload_lang": "python",
+    "expected_compression": "TASK=review INPUT=python CHECK=race,leak,perf FORMAT=markdown ORDER=severity"
+  },
+  {
+    "id": "e2e_002",
+    "category": "code_review",
+    "language": "en",
+    "instruction": "Generate a comprehensive analysis of this JavaScript code, identifying all potential security vulnerabilities, performance bottlenecks, and code smells. Present the findings in a structured JSON format.",
+    "payload": "const express = require('express');\nconst app = express();\nconst db = { query: (sql) => sql };\nconst users = {};\n\napp.get('/user', (req, res) => {\n  const id = req.query.id;\n  db.query('SELECT * FROM users WHERE id = ' + id);\n  res.send(users[id]);\n});\n\napp.get('/search', (req, res) => {\n  let results = [];\n  for (let i = 0; i < 1000000; i++) {\n    if (String(i).includes(req.query.q)) {\n      results.push(i);\n    }\n  }\n  res.json(results);\n});\n\napp.use((err, req, res, next) => {\n  res.send(err.stack);\n});\n\napp.listen(3000);",
+    "payload_type": "code",
+    "payload_lang": "javascript",
+    "expected_compression": "TASK=analyze INPUT=javascript CHECK=security,perf,code_smells FORMAT=json"
+  },
+  {
+    "id": "e2e_003",
+    "category": "translation",
+    "language": "es",
+    "instruction": "Traduce este documento técnico del español al inglés manteniendo el estilo formal y la terminología especializada.",
+    "payload": "La arquitectura de microservicios permite desacoplar componentes independientes desplegables de forma autónoma. Cada servicio expone una API REST y persiste su estado en una base de datos dedicada. La comunicación asíncrona entre servicios se realiza mediante un bus de eventos, lo que mejora la tolerancia a fallos pero introduce complejidad operativa en trazabilidad y consistencia eventual.",
+    "payload_type": "text",
+    "expected_compression": "TASK=translate FROM=es TO=en STYLE=formal DOMAIN=technical"
+  },
+  {
+    "id": "e2e_004",
+    "category": "summarization",
+    "language": "es",
+    "instruction": "Genera un resumen ejecutivo de este informe anual, destacando los puntos clave y las métricas más importantes en formato de lista.",
+    "payload": "Informe anual 2025 — Resumen operativo\n\nLa compañía cerró el ejercicio con ingresos de 48,2 M€ (+12% interanual) y un margen EBITDA del 18,4%. El churn de clientes enterprise se redujo del 7,1% al 5,6% tras el programa de customer success. Se lanzaron tres productos: Analytics Pro, Data Lake Connector y Compliance Hub. La plantilla creció un 9% (412 empleados). Inversión en I+D: 6,1 M€. Deuda neta/EBITDA: 1,3x. Objetivo 2026: expansión en DACH y certificación ISO 27001.",
+    "payload_type": "text",
+    "expected_compression": "TASK=summarize INPUT=annual_report FORMAT=list HIGHLIGHT=key_points,metrics"
+  }
+]

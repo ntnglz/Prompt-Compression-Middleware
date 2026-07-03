@@ -7,6 +7,9 @@ mcp>=1.0.0
 # Ollama Python SDK para integración con modelos locales
 ollama>=0.3.0
 
+# Mistral API para benchmark E2E
+mistralai>=1.0.0
+
 # FastAPI para modo HTTP (opcional pero recomendado)
 fastapi>=0.109.0
 uvicorn[standard]>=0.27.0

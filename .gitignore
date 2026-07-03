@@ -71,3 +71,5 @@ data/benchmarks/runs/
 # Archivos legacy planos (pre-reorganización)
 data/benchmarks/benchmark_*.json
 data/benchmarks/benchmark_*.md
+# Resultados E2E (API Mistral)
+data/e2e/runs/
