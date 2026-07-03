@@ -1,0 +1,4 @@
+# Fine-tuning PCM — instalar solo en Mac de entrenamiento
+# pip install -r requirements-training.txt
+mlx-lm>=0.21.0
+mlx>=0.22.0

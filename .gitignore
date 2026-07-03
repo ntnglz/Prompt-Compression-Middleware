@@ -73,3 +73,7 @@ data/benchmarks/benchmark_*.json
 data/benchmarks/benchmark_*.md
 # Resultados E2E (API Mistral)
 data/e2e/runs/
+# Fine-tuning checkpoints (pesos locales grandes)
+data/training/checkpoints/
+data/training/*.jsonl
+!data/training/.gitkeep
