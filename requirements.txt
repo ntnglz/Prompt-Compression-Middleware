@@ -1,0 +1,30 @@
+# PCM MCP Server - Dependencias
+# ================================
+
+# MCP Server (Protocolo Model Context Protocol)
+mcp>=1.0.0
+
+# Ollama Python SDK para integración con modelos locales
+ollama>=0.3.0
+
+# FastAPI para modo HTTP (opcional pero recomendado)
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+
+# Para manejo de datos y tipado
+pydantic>=2.5.0
+numpy>=1.24.0
+
+# Para logging y utilities
+python-dotenv>=1.0.0
+
+# Testing (opcional)
+pytest>=7.4.0
+pytest-asyncio>=0.23.0
+httpx>=0.26.0
+
+# Desarrollo (opcional)
+black>=24.0.0
+isort>=5.13.0
+flake8>=6.1.0
+mypy>=1.8.0

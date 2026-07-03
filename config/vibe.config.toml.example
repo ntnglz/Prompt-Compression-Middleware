@@ -1,0 +1,66 @@
+# =============================================================================
+# Vibe — configuración MCP para Prompt Compression Middleware (PCM)
+# =============================================================================
+#
+# 1. Copia este archivo a la ubicación de configuración de Vibe:
+#      cp config/vibe.config.toml.example ~/.config/vibe/config.toml
+#    (ajusta la ruta si tu instalación de Vibe usa otro directorio)
+#
+# 2. Arranca el servidor PCM según el transporte elegido:
+#
+#    MCP por HTTP (recomendado para Vibe por URL):
+#      cd "/Volumes/DevSSD/XcodeProjects/Ideas/Prompt Compression Middleware"
+#      python run.py --mcp-http
+#      → http://localhost:8001/mcp
+#
+#    MCP por stdio (Vibe arranca el proceso):
+#      No hace falta arrancar nada manualmente; Vibe lanza run.py --stdio
+#
+# 3. En una sesión de Vibe:
+#      /mcp
+#      /mcp pcm
+#
+# Nota: descomenta UNA sola entrada [[mcp_servers]] según el transporte que uses.
+# =============================================================================
+
+# --- Opción A: streamable-http (URL + /mcp) -----------------------------------
+# Requiere: python run.py --mcp-http
+
+[[mcp_servers]]
+name = "pcm"
+transport = "streamable-http"
+url = "http://localhost:8001/mcp"
+startup_timeout_sec = 30
+tool_timeout_sec = 120
+
+# Si en el futuro añades autenticación, descomenta y adapta:
+# headers = { "Authorization" = "Bearer tu_token" }
+# api_key_env = "PCM_API_KEY"
+# api_key_header = "Authorization"
+# api_key_format = "Bearer {token}"
+
+
+# --- Opción B: stdio (proceso local) ------------------------------------------
+# Vibe arranca el servidor; no uses --mcp-http en paralelo para la misma instancia.
+# Descomenta este bloque y comenta la Opción A si prefieres stdio.
+
+# [[mcp_servers]]
+# name = "pcm"
+# transport = "stdio"
+# command = "python"
+# args = [
+#   "/Volumes/DevSSD/XcodeProjects/Ideas/Prompt Compression Middleware/run.py",
+#   "--stdio",
+# ]
+# env = { PYTHONPATH = "/Volumes/DevSSD/XcodeProjects/Ideas/Prompt Compression Middleware/src" }
+# startup_timeout_sec = 30
+# tool_timeout_sec = 120
+
+
+# --- Herramientas disponibles (prefijo: pcm_) ---------------------------------
+# pcm_compress_prompt
+# pcm_batch_compress
+# pcm_compare_prompts
+# pcm_estimate_tokens
+# pcm_get_compression_stats
+# pcm_health_check

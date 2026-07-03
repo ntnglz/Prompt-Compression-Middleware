@@ -1,0 +1,72 @@
+[
+  {
+    "id": "prompt_001",
+    "text": "Analiza cuidadosamente este código Python buscando posibles condiciones de carrera, fugas de memoria y oportunidades de optimización. Devuelve un informe en Markdown organizado por severidad.",
+    "category": "code_review",
+    "expected_compression": "TASK=review INPUT=python CHECK=race,leak,perf FORMAT=markdown ORDER=severity",
+    "language": "es"
+  },
+  {
+    "id": "prompt_002",
+    "text": "Por favor, podrías traducir este documento técnico del español al inglés manteniendo el estilo formal y la terminología especializada?",
+    "category": "translation",
+    "expected_compression": "TASK=translate FROM=es TO=en STYLE=formal DOMAIN=technical",
+    "language": "es"
+  },
+  {
+    "id": "prompt_003",
+    "text": "Necesito que generes un resumen ejecutivo de este informe anual de la empresa, destacando los puntos clave y las métricas más importantes en formato de lista.",
+    "category": "summarization",
+    "expected_compression": "TASK=summarize INPUT=annual_report FORMAT=list HIGHLIGHT=key_points,metrics",
+    "language": "es"
+  },
+  {
+    "id": "prompt_004",
+    "text": "Generate a comprehensive analysis of this JavaScript code, identifying all potential security vulnerabilities, performance bottlenecks, and code smells. Present the findings in a structured JSON format.",
+    "category": "code_review",
+    "expected_compression": "TASK=analyze INPUT=javascript CHECK=security,perf,code_smells FORMAT=json",
+    "language": "en"
+  },
+  {
+    "id": "prompt_005",
+    "text": "Explica el concepto de Inteligencia Artificial a un niño de 10 años usando analogías sencillas y ejemplos de la vida cotidiana.",
+    "category": "explanation",
+    "expected_compression": "TASK=explain TOPIC=AI AUDIENCE=child_10 STYLE=simple USE=analogies,examples",
+    "language": "es"
+  },
+  {
+    "id": "prompt_006",
+    "text": "I need you to write a professional email to a potential client about our new AI-powered data analysis service. The email should be concise, highlight the main benefits, and include a call to action.",
+    "category": "writing",
+    "expected_compression": "TASK=write TYPE=email TO=client TOPIC=AI_data_service STYLE=professional TONE=concise INCLUDE=benefits,cta",
+    "language": "en"
+  },
+  {
+    "id": "prompt_007",
+    "text": "Comparar estos dos algoritmos de ordenamiento (quicksort y mergesort) en términos de complejidad temporal, complejidad espacial y casos de uso recomendados.",
+    "category": "comparison",
+    "expected_compression": "TASK=compare ITEMS=quicksort,mergesort CRITERIA=time_complexity,space_complexity,use_cases",
+    "language": "es"
+  },
+  {
+    "id": "prompt_008",
+    "text": "Create a detailed project plan for developing a mobile application with the following requirements: user authentication, real-time chat, and image sharing capabilities.",
+    "category": "planning",
+    "expected_compression": "TASK=create_plan TYPE=project DOMAIN=mobile_app FEATURES=auth,realtime_chat,image_sharing",
+    "language": "en"
+  },
+  {
+    "id": "prompt_009",
+    "text": "Revisa este contrato legal y señala todas las cláusulas que puedan ser problemáticas para el cliente, prestando especial atención a las condiciones de cancelación y las penalizaciones.",
+    "category": "legal_review",
+    "expected_compression": "TASK=review INPUT=contract FOCUS=problematic_clauses CHECK=cancellation_terms,penalties",
+    "language": "es"
+  },
+  {
+    "id": "prompt_010",
+    "text": "Design a database schema for an e-commerce application that includes users, products, orders, and reviews. Make sure to include proper relationships and indexes for performance.",
+    "category": "database_design",
+    "expected_compression": "TASK=design SCHEMA=ecommerce ENTITIES=users,products,orders,reviews REQUIRE=relationships,indexes OPTIMIZE=performance",
+    "language": "en"
+  }
+]
