@@ -1,0 +1,24 @@
+{
+  "updated_at": "2026-07-04T05:51:11.547505+00:00",
+  "total_runs": 1,
+  "runs": [
+    {
+      "generated_at": "2026-07-04T05:50:49.814047+00:00",
+      "model": "pcm-compressor",
+      "strategy": "balanced",
+      "include_semantic": true,
+      "summary": {
+        "total_prompts": 10,
+        "avg_compression_ratio": 0.2102,
+        "min_compression_ratio": 0.0,
+        "max_compression_ratio": 0.5294,
+        "total_tokens_saved": 68,
+        "avg_format_similarity": 0.6,
+        "avg_semantic_similarity": 0.92,
+        "avg_processing_time_ms": 1969.09
+      },
+      "json_path": "/Volumes/DevSSD/XcodeProjects/Ideas/Prompt Compression Middleware/data/benchmarks/holdout_pcm_pcm-compressor_20260704_055111/runs/pcm_compressor/pcm_compressor_20260704_075111.json",
+      "md_path": "/Volumes/DevSSD/XcodeProjects/Ideas/Prompt Compression Middleware/data/benchmarks/holdout_pcm_pcm-compressor_20260704_055111/runs/pcm_compressor/pcm_compressor_20260704_075111.md"
+    }
+  ]
+}

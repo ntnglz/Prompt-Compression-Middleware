@@ -1,0 +1,362 @@
+{
+  "generated_at": "2026-07-04T05:50:37.506794+00:00",
+  "model": "granite4.1:3b",
+  "strategy": "balanced",
+  "include_semantic": true,
+  "think": null,
+  "summary": {
+    "total_prompts": 10,
+    "avg_compression_ratio": 0.1977,
+    "min_compression_ratio": 0.0,
+    "max_compression_ratio": 0.5,
+    "total_tokens_saved": 65,
+    "avg_format_similarity": 0.5775,
+    "avg_semantic_similarity": 0.94,
+    "avg_processing_time_ms": 1001.62
+  },
+  "entries": [
+    {
+      "id": "holdout_000",
+      "category": "holdout",
+      "language": "unknown",
+      "original_prompt": "Examina detenidamente el siguiente código typescript e identifica errores lógicos, anti-patrones y mejoras de rendimiento. Formato lista.",
+      "expected_compression": "TASK=review INPUT=typescript CHECK=logic,anti_patterns,perf FORMAT=list",
+      "compressed_prompt": "TASK=review INPUT=typescript CHECK=logic_errors,anti_patterns,perf FORMAT=list",
+      "original_tokens": 34,
+      "compressed_tokens": 17,
+      "compression_ratio": 0.5,
+      "processing_time_ms": 6502.5,
+      "format_similarity": {
+        "key_recall": 1.0,
+        "value_match": 0.75,
+        "score": 0.875,
+        "missing_keys": [],
+        "extra_keys": [],
+        "expected_fields": {
+          "TASK": "review",
+          "INPUT": "typescript",
+          "CHECK": "logic,anti_patterns,perf",
+          "FORMAT": "list"
+        },
+        "actual_fields": {
+          "TASK": "review",
+          "INPUT": "typescript",
+          "CHECK": "logic_errors,anti_patterns,perf",
+          "FORMAT": "list"
+        }
+      },
+      "semantic_similarity": 0.9,
+      "semantic_evaluation": "good"
+    },
+    {
+      "id": "holdout_001",
+      "category": "holdout",
+      "language": "unknown",
+      "original_prompt": "Revisa este código javascript buscando bugs de concurrencia, fugas de memoria y cuellos de botella. Informe en Markdown por severidad.",
+      "expected_compression": "TASK=review INPUT=javascript CHECK=race,leak,perf FORMAT=markdown ORDER=severity",
+      "compressed_prompt": "TASK=review INPUT=javascript CHECK=race,leak,perf FORMAT=markdown ORDER=severity",
+      "original_tokens": 33,
+      "compressed_tokens": 20,
+      "compression_ratio": 0.3939,
+      "processing_time_ms": 385.58,
+      "format_similarity": {
+        "key_recall": 1.0,
+        "value_match": 1.0,
+        "score": 1.0,
+        "missing_keys": [],
+        "extra_keys": [],
+        "expected_fields": {
+          "TASK": "review",
+          "INPUT": "javascript",
+          "CHECK": "race,leak,perf",
+          "FORMAT": "markdown",
+          "ORDER": "severity"
+        },
+        "actual_fields": {
+          "TASK": "review",
+          "INPUT": "javascript",
+          "CHECK": "race,leak,perf",
+          "FORMAT": "markdown",
+          "ORDER": "severity"
+        }
+      },
+      "semantic_similarity": 0.9,
+      "semantic_evaluation": "good"
+    },
+    {
+      "id": "holdout_002",
+      "category": "holdout",
+      "language": "unknown",
+      "original_prompt": "Traduce este documento marketing del en al es manteniendo terminología especializada y tono formal.",
+      "expected_compression": "TASK=translate FROM=en TO=es STYLE=formal DOMAIN=marketing",
+      "compressed_prompt": "TASK=translate INPUT=document STYLE=formal DOMAIN=messaging FROM=en TO=es",
+      "original_tokens": 21,
+      "compressed_tokens": 16,
+      "compression_ratio": 0.2381,
+      "processing_time_ms": 312.37,
+      "format_similarity": {
+        "key_recall": 1.0,
+        "value_match": 0.8,
+        "score": 0.9,
+        "missing_keys": [],
+        "extra_keys": [
+          "INPUT"
+        ],
+        "expected_fields": {
+          "TASK": "translate",
+          "FROM": "en",
+          "TO": "es",
+          "STYLE": "formal",
+          "DOMAIN": "marketing"
+        },
+        "actual_fields": {
+          "TASK": "translate",
+          "INPUT": "document",
+          "STYLE": "formal",
+          "DOMAIN": "messaging",
+          "FROM": "en",
+          "TO": "es"
+        }
+      },
+      "semantic_similarity": 0.9,
+      "semantic_evaluation": "good"
+    },
+    {
+      "id": "holdout_003",
+      "category": "holdout",
+      "language": "unknown",
+      "original_prompt": "Create an executive summary of this annual financial report with key metrics and strategic highlights.",
+      "expected_compression": "TASK=summarize INPUT=annual_report FORMAT=list HIGHLIGHT=metrics,strategic_highlights",
+      "compressed_prompt": "Create an executive summary of this annual financial report with key metrics and strategic highlights.",
+      "original_tokens": 16,
+      "compressed_tokens": 16,
+      "compression_ratio": 0.0,
+      "processing_time_ms": 336.9,
+      "format_similarity": {
+        "key_recall": 0.0,
+        "value_match": 0.0,
+        "score": 0.0,
+        "missing_keys": [
+          "FORMAT",
+          "HIGHLIGHT",
+          "INPUT",
+          "TASK"
+        ],
+        "extra_keys": [],
+        "expected_fields": {
+          "TASK": "summarize",
+          "INPUT": "annual_report",
+          "FORMAT": "list",
+          "HIGHLIGHT": "metrics,strategic_highlights"
+        },
+        "actual_fields": {}
+      },
+      "semantic_similarity": 1.0,
+      "semantic_evaluation": "excellent"
+    },
+    {
+      "id": "holdout_004",
+      "category": "holdout",
+      "language": "unknown",
+      "original_prompt": "Explica qué es cybersecurity a un público principiante usando analogías y ejemplos cotidianos.",
+      "expected_compression": "TASK=explain TOPIC=cybersecurity AUDIENCE=beginner STYLE=simple USE=analogies,examples",
+      "compressed_prompt": "Explica qué es cybersecurity a un público principiante usando analogías y ejemplos cotidianos.",
+      "original_tokens": 22,
+      "compressed_tokens": 22,
+      "compression_ratio": 0.0,
+      "processing_time_ms": 394.0,
+      "format_similarity": {
+        "key_recall": 0.0,
+        "value_match": 0.0,
+        "score": 0.0,
+        "missing_keys": [
+          "AUDIENCE",
+          "STYLE",
+          "TASK",
+          "TOPIC",
+          "USE"
+        ],
+        "extra_keys": [],
+        "expected_fields": {
+          "TASK": "explain",
+          "TOPIC": "cybersecurity",
+          "AUDIENCE": "beginner",
+          "STYLE": "simple",
+          "USE": "analogies,examples"
+        },
+        "actual_fields": {}
+      },
+      "semantic_similarity": 1.0,
+      "semantic_evaluation": "excellent"
+    },
+    {
+      "id": "holdout_005",
+      "category": "holdout",
+      "language": "unknown",
+      "original_prompt": "Write a professional blog post introduction about cloud_migration for developers. Tone: informative and concise.",
+      "expected_compression": "TASK=write TYPE=blog TOPIC=cloud_migration AUDIENCE=developers STYLE=informative TONE=concise",
+      "compressed_prompt": "Write a professional blog post introduction about cloud_migration for developers. Tone: informative and concise.",
+      "original_tokens": 18,
+      "compressed_tokens": 18,
+      "compression_ratio": 0.0,
+      "processing_time_ms": 416.01,
+      "format_similarity": {
+        "key_recall": 0.0,
+        "value_match": 0.0,
+        "score": 0.0,
+        "missing_keys": [
+          "AUDIENCE",
+          "STYLE",
+          "TASK",
+          "TONE",
+          "TOPIC",
+          "TYPE"
+        ],
+        "extra_keys": [],
+        "expected_fields": {
+          "TASK": "write",
+          "TYPE": "blog",
+          "TOPIC": "cloud_migration",
+          "AUDIENCE": "developers",
+          "STYLE": "informative",
+          "TONE": "concise"
+        },
+        "actual_fields": {}
+      },
+      "semantic_similarity": 1.0,
+      "semantic_evaluation": "excellent"
+    },
+    {
+      "id": "holdout_006",
+      "category": "holdout",
+      "language": "unknown",
+      "original_prompt": "Comparar estos dos algoritmos de ordenamiento (quicksort y mergesort) en términos de complejidad temporal, complejidad espacial y casos de uso recomendados.",
+      "expected_compression": "TASK=compare ITEMS=quicksort,mergesort CRITERIA=time_complexity,space_complexity,use_cases",
+      "compressed_prompt": "TASK=compare ITEMS=quicksort,mergesort CRITERIA=time_complexity,space_complexity,use_cases",
+      "original_tokens": 40,
+      "compressed_tokens": 25,
+      "compression_ratio": 0.375,
+      "processing_time_ms": 443.34,
+      "format_similarity": {
+        "key_recall": 1.0,
+        "value_match": 1.0,
+        "score": 1.0,
+        "missing_keys": [],
+        "extra_keys": [],
+        "expected_fields": {
+          "TASK": "compare",
+          "ITEMS": "quicksort,mergesort",
+          "CRITERIA": "time_complexity,space_complexity,use_cases"
+        },
+        "actual_fields": {
+          "TASK": "compare",
+          "ITEMS": "quicksort,mergesort",
+          "CRITERIA": "time_complexity,space_complexity,use_cases"
+        }
+      },
+      "semantic_similarity": 0.9,
+      "semantic_evaluation": "good"
+    },
+    {
+      "id": "holdout_007",
+      "category": "holdout",
+      "language": "unknown",
+      "original_prompt": "Create a detailed roadmap for building a SaaS dashboard with role-based access, analytics, and export features.",
+      "expected_compression": "TASK=create_plan TYPE=project DOMAIN=saas_dashboard FEATURES=rbac,analytics,export",
+      "compressed_prompt": "Create a detailed roadmap for building a SaaS dashboard with role-based access, analytics, and export features.",
+      "original_tokens": 21,
+      "compressed_tokens": 21,
+      "compression_ratio": 0.0,
+      "processing_time_ms": 395.88,
+      "format_similarity": {
+        "key_recall": 0.0,
+        "value_match": 0.0,
+        "score": 0.0,
+        "missing_keys": [
+          "DOMAIN",
+          "FEATURES",
+          "TASK",
+          "TYPE"
+        ],
+        "extra_keys": [],
+        "expected_fields": {
+          "TASK": "create_plan",
+          "TYPE": "project",
+          "DOMAIN": "saas_dashboard",
+          "FEATURES": "rbac,analytics,export"
+        },
+        "actual_fields": {}
+      },
+      "semantic_similarity": 1.0,
+      "semantic_evaluation": "excellent"
+    },
+    {
+      "id": "holdout_008",
+      "category": "holdout",
+      "language": "unknown",
+      "original_prompt": "Revisa este contrato y señala cláusulas problemáticas para el cliente, especialmente cancelación y penalizaciones.",
+      "expected_compression": "TASK=review INPUT=contract FOCUS=problematic_clauses CHECK=cancellation_terms,penalties",
+      "compressed_prompt": "TASK=review INPUT=contract FOCUS=problematic_clauses CHECK=cancellation_terms,penalties",
+      "original_tokens": 25,
+      "compressed_tokens": 20,
+      "compression_ratio": 0.2,
+      "processing_time_ms": 359.56,
+      "format_similarity": {
+        "key_recall": 1.0,
+        "value_match": 1.0,
+        "score": 1.0,
+        "missing_keys": [],
+        "extra_keys": [],
+        "expected_fields": {
+          "TASK": "review",
+          "INPUT": "contract",
+          "FOCUS": "problematic_clauses",
+          "CHECK": "cancellation_terms,penalties"
+        },
+        "actual_fields": {
+          "TASK": "review",
+          "INPUT": "contract",
+          "FOCUS": "problematic_clauses",
+          "CHECK": "cancellation_terms,penalties"
+        }
+      },
+      "semantic_similarity": 0.9,
+      "semantic_evaluation": "good"
+    },
+    {
+      "id": "holdout_009",
+      "category": "holdout",
+      "language": "unknown",
+      "original_prompt": "Diseña un esquema de base de datos para una app e-commerce con usuarios, productos, pedidos y reseñas. Incluye relaciones e índices.",
+      "expected_compression": "TASK=design SCHEMA=ecommerce ENTITIES=users,products,orders,reviews REQUIRE=relationships,indexes OPTIMIZE=performance",
+      "compressed_prompt": "TASK=design SCHEMA=ecommerce ENTITIES=users,products,orders,reviews REQUIRE=relationships,indexes OPTIMIZE=performance",
+      "original_tokens": 37,
+      "compressed_tokens": 27,
+      "compression_ratio": 0.2703,
+      "processing_time_ms": 470.07,
+      "format_similarity": {
+        "key_recall": 1.0,
+        "value_match": 1.0,
+        "score": 1.0,
+        "missing_keys": [],
+        "extra_keys": [],
+        "expected_fields": {
+          "TASK": "design",
+          "SCHEMA": "ecommerce",
+          "ENTITIES": "users,products,orders,reviews",
+          "REQUIRE": "relationships,indexes",
+          "OPTIMIZE": "performance"
+        },
+        "actual_fields": {
+          "TASK": "design",
+          "SCHEMA": "ecommerce",
+          "ENTITIES": "users,products,orders,reviews",
+          "REQUIRE": "relationships,indexes",
+          "OPTIMIZE": "performance"
+        }
+      },
+      "semantic_similarity": 0.9,
+      "semantic_evaluation": "good"
+    }
+  ]
+}

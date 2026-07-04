@@ -18,5 +18,11 @@ echo
 
 "$PYTHON" -m pytest -m "not integration" -q --tb=short "$@"
 
+if [[ -f "${ROOT}/data/training/v2/train.jsonl" ]]; then
+  echo
+  echo "==> Leakage check (v2 train)"
+  "$PYTHON" scripts/check_dataset_leakage.py
+fi
+
 echo
 echo "==> CI local OK"

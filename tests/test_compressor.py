@@ -63,6 +63,18 @@ class TestCompressor:
         with pytest.raises(ValueError):
             PromptCompressor(config=config)
 
+    def test_glossary_only_excludes_few_shot_examples(self):
+        compressor = PromptCompressor(CompressorConfig(glossary_only=True))
+        prompt = compressor._get_compression_prompt("balanced")
+        assert "EJEMPLOS:" not in prompt
+        assert "GLOSARIO PCM" in prompt
+        assert "TASK:" in prompt
+
+    def test_full_prompt_includes_few_shot_examples(self):
+        compressor = PromptCompressor(CompressorConfig(glossary_only=False))
+        prompt = compressor._get_compression_prompt("balanced")
+        assert "EJEMPLOS:" in prompt
+
     def test_compression_prompt_includes_strategy(self):
         """Test que la estrategia modifica el system prompt"""
         compressor = PromptCompressor()

@@ -1,0 +1,407 @@
+{
+  "code_review": {
+    "language": ["es", "en"],
+    "prompts": [
+      "Inspecciona el fragmento {lang} adjunto: localiza condiciones de carrera, recursos no liberados y puntos calientes de CPU. Presenta hallazgos en Markdown clasificados por gravedad.",
+      "Perform a deep {lang} code inspection covering injection flaws, algorithmic inefficiencies, and readability smells. Return structured JSON.",
+      "Evalúa el módulo {lang} siguiente detectando fallos de lógica, acoplamiento excesivo y oportunidades de paralelización. Formato lista numerada.",
+      "Run a static {lang} review focused on thread safety, resource lifecycle, and cache behavior. Output severity-ranked Markdown.",
+      "Audita este código {lang} buscando vulnerabilidades OWASP, complejidad ciclomática elevada y violaciones SOLID. Respuesta en JSON."
+    ],
+    "pcm_templates": [
+      "TASK=review INPUT={input} CHECK=race,resource_leak,cpu_hotspots FORMAT=markdown ORDER=severity",
+      "TASK=analyze INPUT={input} CHECK=injection,inefficiency,readability FORMAT=json",
+      "TASK=review INPUT={input} CHECK=logic,coupling,parallelism FORMAT=list ORDER=priority",
+      "TASK=review INPUT={input} CHECK=thread_safety,lifecycle,cache FORMAT=markdown ORDER=severity",
+      "TASK=audit INPUT={input} CHECK=owasp,cyclomatic_complexity,solid FORMAT=json"
+    ],
+    "inputs": ["python", "javascript", "rust", "go", "java", "typescript", "csharp", "kotlin", "swift", "ruby"]
+  },
+  "security_audit": {
+    "language": ["es", "en"],
+    "prompts": [
+      "Realiza una auditoría de seguridad del componente {input}: identifica vectores de ataque, datos expuestos y controles ausentes. Informe Markdown por criticidad.",
+      "Conduct a threat-model review of this {input} surface. Flag authentication gaps, authorization flaws, and secret leakage. JSON output.",
+      "Examina la superficie {input} en busca de misconfiguraciones, dependencias vulnerables y fallos de validación de entrada. Lista priorizada."
+    ],
+    "pcm_templates": [
+      "TASK=audit INPUT={input} CHECK=attack_vectors,exposed_data,missing_controls FORMAT=markdown ORDER=criticality",
+      "TASK=audit INPUT={input} CHECK=auth_gaps,authorization,secret_leakage FORMAT=json",
+      "TASK=review INPUT={input} CHECK=misconfig,vulnerable_deps,input_validation FORMAT=list ORDER=priority"
+    ],
+    "inputs": ["web_api", "mobile_app", "cloud_infra", "ci_pipeline", "database_layer", "auth_service"]
+  },
+  "refactoring": {
+    "language": ["es", "en"],
+    "prompts": [
+      "Propón un plan de refactorización para este servicio {input} legacy: reduce acoplamiento, mejora cobertura de tests y elimina código muerto. Salida en lista priorizada.",
+      "Outline refactoring steps for this {input} module with emphasis on single responsibility, dependency injection, and clearer boundaries. Bullet list.",
+      "Reestructura el paquete {input} eliminando duplicación, extrayendo interfaces y simplificando flujos condicionales. Formato checklist ordenado."
+    ],
+    "pcm_templates": [
+      "TASK=refactor INPUT={input} CHECK=coupling,test_coverage,dead_code FORMAT=list ORDER=priority",
+      "TASK=refactor INPUT={input} CHECK=srp,dependency_injection,boundaries FORMAT=list",
+      "TASK=refactor INPUT={input} CHECK=duplication,interfaces,conditional_flow FORMAT=list ORDER=priority"
+    ],
+    "inputs": ["python", "java", "csharp", "javascript", "typescript", "go"]
+  },
+  "translation": {
+    "language": ["es", "en"],
+    "prompts": [
+      "Convierte este texto {domain} del {from_lang} al {to_lang} preservando registro profesional y equivalencias terminológicas del sector.",
+      "Translate the attached {domain} material from {from_lang} to {to_lang}. Keep domain-specific terms consistent and tone neutral-formal.",
+      "Localiza el documento {domain} de {from_lang} a {to_lang} adaptando expresiones idiomáticas sin alterar el significado técnico."
+    ],
+    "pcm_templates": [
+      "TASK=translate FROM={from_lang} TO={to_lang} STYLE=formal DOMAIN={domain}",
+      "TASK=translate FROM={from_lang} TO={to_lang} STYLE=neutral_formal DOMAIN={domain}",
+      "TASK=translate FROM={from_lang} TO={to_lang} STYLE=formal DOMAIN={domain} TONE=neutral"
+    ],
+    "domains": ["financial", "scientific", "hr_policy", "software_docs", "academic"]
+  },
+  "summarization": {
+    "language": ["es", "en"],
+    "documents": [
+      {
+        "prompt": "Condensa este informe de auditoría interna resaltando no conformidades, plazos de remediación y responsables asignados.",
+        "pcm": "TASK=summarize INPUT=audit_report FORMAT=list HIGHLIGHT=non_conformities,remediation_deadlines,owners"
+      },
+      {
+        "prompt": "Summarize this vendor due-diligence dossier emphasizing financial stability, compliance gaps, and integration risks.",
+        "pcm": "TASK=summarize INPUT=vendor_diligence FORMAT=list HIGHLIGHT=financial_stability,compliance_gaps,integration_risks"
+      },
+      {
+        "prompt": "Extrae lo esencial de esta transcripción de entrevista de usuario: pain points, funcionalidades solicitadas y objeciones recurrentes.",
+        "pcm": "TASK=summarize INPUT=user_interview FORMAT=list HIGHLIGHT=pain_points,requested_features,objections"
+      },
+      {
+        "prompt": "Create a brief of this sprint retrospective capturing what went well, blockers, and action items with owners.",
+        "pcm": "TASK=summarize INPUT=sprint_retro FORMAT=list HIGHLIGHT=wins,blockers,action_items"
+      },
+      {
+        "prompt": "Resume este informe de pentest destacando vulnerabilidades explotables, activos afectados y recomendaciones urgentes.",
+        "pcm": "TASK=summarize INPUT=pentest_report FORMAT=list HIGHLIGHT=exploitable_vulns,affected_assets,urgent_recommendations"
+      },
+      {
+        "prompt": "Summarize this board meeting deck focusing on strategic bets, budget shifts, and KPI deltas versus plan.",
+        "pcm": "TASK=summarize INPUT=board_deck FORMAT=list HIGHLIGHT=strategic_bets,budget_shifts,kpi_deltas"
+      },
+      {
+        "prompt": "Sintetiza el informe de campaña de marketing: audiencias, CTR por canal y aprendizajes para la próxima iteración.",
+        "pcm": "TASK=summarize INPUT=marketing_campaign FORMAT=list HIGHLIGHT=audiences,ctr_by_channel,learnings"
+      },
+      {
+        "prompt": "Distill this RFC thread into open questions, proposed alternatives, and the current consensus position.",
+        "pcm": "TASK=summarize INPUT=rfc_thread FORMAT=list HIGHLIGHT=open_questions,alternatives,consensus"
+      },
+      {
+        "prompt": "Elabora un resumen del postmortem del incidente señalando línea temporal, causa raíz y medidas preventivas acordadas.",
+        "pcm": "TASK=summarize INPUT=incident_postmortem FORMAT=list HIGHLIGHT=timeline,root_cause,preventive_measures"
+      },
+      {
+        "prompt": "Summarize this patent abstract highlighting novel claims, prior art distinctions, and commercial applications.",
+        "pcm": "TASK=summarize INPUT=patent_abstract FORMAT=list HIGHLIGHT=novel_claims,prior_art,applications"
+      },
+      {
+        "prompt": "Condensa la minuta del comité de arquitectura: decisiones ADR adoptadas, trade-offs aceptados y deuda técnica nueva.",
+        "pcm": "TASK=summarize INPUT=architecture_committee FORMAT=list HIGHLIGHT=adr_decisions,tradeoffs,tech_debt"
+      },
+      {
+        "prompt": "Summarize this clinical trial protocol section on endpoints, exclusion criteria, and monitoring schedule.",
+        "pcm": "TASK=summarize INPUT=clinical_protocol FORMAT=list HIGHLIGHT=endpoints,exclusion_criteria,monitoring"
+      },
+      {
+        "prompt": "Resume el informe de sostenibilidad corporativa: emisiones Scope 1-3, metas 2030 y brechas frente a objetivos.",
+        "pcm": "TASK=summarize INPUT=sustainability_report FORMAT=list HIGHLIGHT=scope_emissions,2030_targets,gaps"
+      },
+      {
+        "prompt": "Summarize this earnings call transcript emphasizing guidance changes, margin drivers, and analyst concerns.",
+        "pcm": "TASK=summarize INPUT=earnings_call FORMAT=list HIGHLIGHT=guidance,margin_drivers,analyst_concerns"
+      },
+      {
+        "prompt": "Sintetiza el dossier de onboarding de empleado: beneficios clave, políticas IT y hitos del primer mes.",
+        "pcm": "TASK=summarize INPUT=employee_onboarding FORMAT=list HIGHLIGHT=benefits,it_policies,first_month_milestones"
+      },
+      {
+        "prompt": "Summarize this competitive intelligence brief on pricing moves, feature parity, and win-loss patterns.",
+        "pcm": "TASK=summarize INPUT=competitive_intel FORMAT=list HIGHLIGHT=pricing,feature_parity,win_loss"
+      },
+      {
+        "prompt": "Condensa el informe de calidad de datos: completitud por campo, outliers detectados y reglas de limpieza propuestas.",
+        "pcm": "TASK=summarize INPUT=data_quality_report FORMAT=list HIGHLIGHT=completeness,outliers,cleaning_rules"
+      },
+      {
+        "prompt": "Summarize this grant proposal abstract covering hypothesis, methodology, expected impact, and budget headline.",
+        "pcm": "TASK=summarize INPUT=grant_proposal FORMAT=list HIGHLIGHT=hypothesis,methodology,impact,budget"
+      },
+      {
+        "prompt": "Resume la acta del consejo de administración: dividendos aprobados, nombramientos y riesgos materializados.",
+        "pcm": "TASK=summarize INPUT=board_minutes FORMAT=list HIGHLIGHT=dividends,appointments,materialized_risks"
+      },
+      {
+        "prompt": "Summarize this API deprecation notice listing sunset dates, migration paths, and breaking changes.",
+        "pcm": "TASK=summarize INPUT=deprecation_notice FORMAT=list HIGHLIGHT=sunset_dates,migration_paths,breaking_changes"
+      },
+      {
+        "prompt": "Sintetiza el informe de accesibilidad web: criterios WCAG incumplidos, páginas críticas y plan de remediación.",
+        "pcm": "TASK=summarize INPUT=accessibility_audit FORMAT=list HIGHLIGHT=wcag_failures,critical_pages,remediation_plan"
+      },
+      {
+        "prompt": "Summarize this merger integration playbook highlighting workstreams, synergy targets, and day-one priorities.",
+        "pcm": "TASK=summarize INPUT=merger_playbook FORMAT=list HIGHLIGHT=workstreams,synergy_targets,day_one_priorities"
+      },
+      {
+        "prompt": "Condensa el informe de inventario de activos cloud: recursos huérfanos, coste mensual y recomendaciones de rightsizing.",
+        "pcm": "TASK=summarize INPUT=cloud_inventory FORMAT=list HIGHLIGHT=orphan_resources,monthly_cost,rightsizing"
+      },
+      {
+        "prompt": "Summarize this curriculum vitae for a hiring panel: career arc, standout achievements, and skill gaps for the role.",
+        "pcm": "TASK=summarize INPUT=cv_review FORMAT=list HIGHLIGHT=career_arc,achievements,skill_gaps"
+      },
+      {
+        "prompt": "Resume el informe de satisfacción de clientes NPS: drivers detractores, segmentos en riesgo y acciones de retención.",
+        "pcm": "TASK=summarize INPUT=nps_report FORMAT=list HIGHLIGHT=detractor_drivers,at_risk_segments,retention_actions"
+      }
+    ]
+  },
+  "explanation": {
+    "language": ["es", "en"],
+    "prompts": [
+      "Describe {topic} para alguien sin formación técnica usando metáforas del día a día y un ejemplo concreto.",
+      "Break down {topic} for a curious teenager: plain language, one analogy, no jargon wall.",
+      "Aclara qué implica {topic} para un manager de producto: impacto en roadmap, riesgos y métricas relevantes.",
+      "Explain {topic} to a data analyst audience: focus on practical workflows and when to apply it."
+    ],
+    "pcm_templates": [
+      "TASK=explain TOPIC={topic} AUDIENCE=non_technical STYLE=simple USE=metaphors,example",
+      "TASK=explain TOPIC={topic} AUDIENCE=teenager STYLE=plain USE=analogy",
+      "TASK=explain TOPIC={topic} AUDIENCE=product_manager STYLE=practical FOCUS=roadmap,risks,metrics",
+      "TASK=explain TOPIC={topic} AUDIENCE=data_analyst STYLE=practical USE=workflows,application"
+    ],
+    "topics": [
+      "zero_trust_security",
+      "event_sourcing",
+      "federated_learning",
+      "observability",
+      "edge_computing",
+      "generative_ai",
+      "data_mesh",
+      "feature_flags",
+      "service_mesh",
+      "prompt_engineering",
+      "vector_databases",
+      "green_software"
+    ]
+  },
+  "writing": {
+    "language": ["es", "en"],
+    "prompts": [
+      "Redacta un comunicado interno sobre {topic} para empleados: tono transparente, hechos verificados y próximos pasos claros.",
+      "Draft a customer-facing FAQ entry about {topic}. Friendly tone, concise answers, link to docs where helpful.",
+      "Escribe la introducción de un whitepaper sobre {topic} dirigido a CTOs: problema, enfoque propuesto y valor diferencial.",
+      "Compose a release note blurb for {topic} targeting developers: what changed, why it matters, migration hint."
+    ],
+    "pcm_templates": [
+      "TASK=write TYPE=internal_comms TOPIC={topic} AUDIENCE=employees STYLE=transparent TONE=clear INCLUDE=facts,next_steps",
+      "TASK=write TYPE=faq TOPIC={topic} AUDIENCE=customers STYLE=friendly TONE=concise INCLUDE=doc_links",
+      "TASK=write TYPE=whitepaper_intro TOPIC={topic} AUDIENCE=cto STYLE=executive INCLUDE=problem,approach,value",
+      "TASK=write TYPE=release_note TOPIC={topic} AUDIENCE=developers STYLE=technical INCLUDE=changes,migration_hint"
+    ],
+    "topics": [
+      "zero_downtime_deployments",
+      "privacy_by_design",
+      "cost_optimization",
+      "on_call_rotation",
+      "open_source_governance",
+      "ai_governance",
+      "remote_first_culture",
+      "platform_engineering"
+    ]
+  },
+  "comparison": {
+    "language": ["es", "en"],
+    "prompts": [
+      "Contrasta {item_a} frente a {item_b} evaluando latencia, coste operativo y curva de adopción del equipo.",
+      "Compare {item_a} and {item_b} for a fintech workload: compliance fit, throughput, and operational complexity.",
+      "Analiza {item_a} versus {item_b} en mantenibilidad, ecosistema de librerías y soporte a long-running jobs.",
+      "Weigh {item_a} against {item_b} regarding developer experience, observability hooks, and vendor lock-in risk."
+    ],
+    "pcm_templates": [
+      "TASK=compare ITEMS={item_a},{item_b} CRITERIA=latency,operational_cost,adoption_curve",
+      "TASK=compare ITEMS={item_a},{item_b} CRITERIA=compliance,throughput,complexity",
+      "TASK=compare ITEMS={item_a},{item_b} CRITERIA=maintainability,ecosystem,long_running_jobs",
+      "TASK=compare ITEMS={item_a},{item_b} CRITERIA=developer_experience,observability,vendor_lock_in"
+    ],
+    "pairs": [
+      ["apache_spark", "apache_flink"],
+      ["nginx", "envoy"],
+      ["mysql", "cockroachdb"],
+      ["aws_lambda", "cloud_run"],
+      ["prometheus", "datadog"],
+      ["react", "vue"],
+      ["svelte", "solidjs"],
+      ["grpc", "avro_rpc"],
+      ["elasticsearch", "opensearch"],
+      ["rabbitmq", "nats"],
+      ["vault", "aws_secrets_manager"],
+      ["jenkins", "github_actions"]
+    ]
+  },
+  "planning": {
+    "language": ["es", "en"],
+    "prompts": [
+      "Elabora un cronograma para lanzar un marketplace B2B con catálogo, pagos escrow y panel de vendedores en 6 meses.",
+      "Draft a phased rollout plan for migrating a monolithic ERP to modular services with rollback gates and training milestones.",
+      "Diseña la hoja de ruta de un programa de observabilidad: instrumentación, SLOs, alertas y runbooks en tres trimestres.",
+      "Create a 90-day plan to stand up an internal developer platform with golden paths, self-service envs, and guardrails."
+    ],
+    "pcm_templates": [
+      "TASK=create_plan TYPE=project DOMAIN=b2b_marketplace FEATURES=catalog,escrow_payments,seller_panel",
+      "TASK=create_plan TYPE=migration DOMAIN=erp_monolith FEATURES=phased_rollout,rollback_gates,training",
+      "TASK=create_plan TYPE=program DOMAIN=observability FEATURES=instrumentation,slos,alerting,runbooks",
+      "TASK=create_plan TYPE=project DOMAIN=developer_platform FEATURES=golden_paths,self_service,guardrails"
+    ]
+  },
+  "legal_review": {
+    "language": ["es", "en"],
+    "prompts": [
+      "Examina este acuerdo de procesamiento de datos y señala obligaciones desproporcionadas para el encargado, plazos de notificación y subencargados.",
+      "Review this software license agreement for unfavorable indemnification, IP assignment, and termination-for-convenience terms.",
+      "Analiza las condiciones generales de contratación buscando cláusulas abusivas en limitación de responsabilidad, jurisdicción y renovación automática."
+    ],
+    "pcm_templates": [
+      "TASK=review INPUT=dpa FOCUS=processor_burden CHECK=notification_deadlines,subprocessors",
+      "TASK=review INPUT=software_license FOCUS=unfavorable_terms CHECK=indemnification,ip_assignment,termination",
+      "TASK=review INPUT=terms_of_service FOCUS=abusive_clauses CHECK=liability_cap,jurisdiction,auto_renewal"
+    ]
+  },
+  "database_design": {
+    "language": ["es", "en"],
+    "prompts": [
+      "Modela el esquema relacional para una plataforma de suscripciones con planes, facturación prorrateada e historial de pagos. Incluye índices para consultas de MRR.",
+      "Design a schema for a real-time analytics pipeline storing raw events, session aggregates, and daily rollups. Optimize for time-range queries.",
+      "Propón tablas e índices para un sistema de gestión documental versionado con permisos granulares, auditoría y búsqueda full-text."
+    ],
+    "pcm_templates": [
+      "TASK=design SCHEMA=subscription_platform ENTITIES=plans,prorated_billing,payment_history REQUIRE=indexes OPTIMIZE=mrr_queries",
+      "TASK=design SCHEMA=analytics_pipeline ENTITIES=raw_events,session_aggregates,daily_rollups REQUIRE=partitioning OPTIMIZE=time_range_queries",
+      "TASK=design SCHEMA=document_management ENTITIES=versions,permissions,audit_log REQUIRE=full_text_search OPTIMIZE=version_history"
+    ]
+  },
+  "api_design": {
+    "language": ["es", "en"],
+    "prompts": [
+      "Define la especificación REST para un {input}: recursos, contratos de error, paginación y estrategia de versionado.",
+      "Design an event-driven {input} API with topic naming, schema evolution rules, and idempotency guarantees.",
+      "Diseña endpoints gRPC para {input} incluyendo mensajes protobuf, códigos de estado y política de rate limiting."
+    ],
+    "pcm_templates": [
+      "TASK=design TYPE=rest_api DOMAIN={input} REQUIRE=resources,error_contracts,pagination,versioning",
+      "TASK=design TYPE=event_api DOMAIN={input} REQUIRE=topic_naming,schema_evolution,idempotency",
+      "TASK=design TYPE=grpc_api DOMAIN={input} REQUIRE=protobuf_messages,status_codes,rate_limiting"
+    ],
+    "inputs": ["payment_gateway", "inventory_service", "notification_hub", "identity_provider", "search_index"]
+  },
+  "data_analysis": {
+    "language": ["es", "en"],
+    "prompts": [
+      "Explora el dataset {input}: distribuciones, valores atípicos, correlaciones relevantes y preguntas de negocio sugeridas.",
+      "Profile the {input} dataset for missingness patterns, class imbalance, and feature leakage risks before modeling.",
+      "Analiza {input} calculando KPIs clave, tendencias temporales y segmentos con mayor variabilidad. Tabla resumen + insights."
+    ],
+    "pcm_templates": [
+      "TASK=analyze INPUT={input} CHECK=distributions,outliers,correlations FORMAT=insights",
+      "TASK=analyze INPUT={input} CHECK=missingness,class_imbalance,feature_leakage FORMAT=report",
+      "TASK=analyze INPUT={input} CHECK=kpis,temporal_trends,segments FORMAT=summary"
+    ],
+    "inputs": [
+      "retail_transactions",
+      "web_clickstream",
+      "sensor_telemetry",
+      "customer_churn",
+      "supply_chain_delays",
+      "ad_campaign_metrics",
+      "healthcare_claims",
+      "energy_consumption"
+    ]
+  },
+  "debugging": {
+    "language": ["es", "en"],
+    "prompts": [
+      "Diagnostica por qué este servicio {input} devuelve respuestas intermitentes 503: revisa timeouts, pool de conexiones y circuit breakers.",
+      "Trace the root cause of memory growth in this {input} worker process. Suggest minimal repro steps and fix options.",
+      "Investiga un deadlock en código {input}: identifica locks involucrados, orden de adquisición y parche propuesto."
+    ],
+    "pcm_templates": [
+      "TASK=debug INPUT={input} CHECK=timeouts,connection_pool,circuit_breaker FORMAT=diagnosis",
+      "TASK=debug INPUT={input} CHECK=memory_growth,repro_steps,fix_options FORMAT=report",
+      "TASK=debug INPUT={input} CHECK=deadlock,lock_order,patch FORMAT=diagnosis"
+    ],
+    "inputs": ["python", "java", "go", "rust", "csharp", "nodejs"]
+  },
+  "testing": {
+    "language": ["es", "en"],
+    "prompts": [
+      "Diseña la estrategia de pruebas para un microservicio usando {input}: unitarias, contrato, integración y criterios de cobertura.",
+      "Propose a {input} test pyramid for a React SPA with API mocks, visual regression, and CI gating rules.",
+      "Planifica tests de carga y caos con {input} para validar SLOs bajo picos de tráfico y fallos de dependencias."
+    ],
+    "pcm_templates": [
+      "TASK=plan TYPE=test_strategy INPUT={input} CHECK=unit,contract,integration REQUIRE=coverage_criteria",
+      "TASK=plan TYPE=test_pyramid INPUT={input} CHECK=api_mocks,visual_regression,ci_gates",
+      "TASK=plan TYPE=load_chaos_tests INPUT={input} CHECK=traffic_spikes,dependency_failures REQUIRE=slo_validation"
+    ],
+    "inputs": ["pytest", "jest", "junit5", "playwright", "k6"]
+  },
+  "documentation": {
+    "language": ["es", "en"],
+    "prompts": [
+      "Redacta documentación de {input} para desarrolladores: instalación, configuración mínima y ejemplo end-to-end funcional.",
+      "Write an operations runbook section for {input} covering alert triage, escalation paths, and rollback procedure.",
+      "Elabora una guía de arquitectura de {input} explicando componentes, flujos de datos y decisiones de diseño clave."
+    ],
+    "pcm_templates": [
+      "TASK=write TYPE=developer_docs INPUT={input} AUDIENCE=developers INCLUDE=install,config,example",
+      "TASK=write TYPE=runbook INPUT={input} AUDIENCE=operators INCLUDE=alert_triage,escalation,rollback",
+      "TASK=write TYPE=architecture_guide INPUT={input} AUDIENCE=engineers INCLUDE=components,data_flows,design_decisions"
+    ],
+    "inputs": ["sdk_client", "deployment_pipeline", "observability_stack", "data_warehouse"]
+  },
+  "performance_optimization": {
+    "language": ["es", "en"],
+    "prompts": [
+      "Optimiza el componente {input}: perfila cuellos de botella, propone cambios concretos y estima impacto en latencia p99.",
+      "Tune this {input} for throughput under burst load. Recommend caching, batching, and connection pooling adjustments.",
+      "Mejora el rendimiento de {input} reduciendo allocations, I/O síncrono y contención en locks. Prioriza quick wins."
+    ],
+    "pcm_templates": [
+      "TASK=optimize INPUT={input} CHECK=bottlenecks,concrete_changes OPTIMIZE=p99_latency",
+      "TASK=optimize INPUT={input} CHECK=burst_load OPTIMIZE=throughput REQUIRE=caching,batching,pooling",
+      "TASK=optimize INPUT={input} CHECK=allocations,sync_io,lock_contention OPTIMIZE=quick_wins"
+    ],
+    "inputs": [
+      "graphql_resolver",
+      "sql_query_planner",
+      "image_processing_pipeline",
+      "websocket_gateway",
+      "batch_etl_job",
+      "search_autocomplete",
+      "pdf_renderer",
+      "mobile_startup_path"
+    ]
+  },
+  "incident_response": {
+    "language": ["es", "en"],
+    "prompts": [
+      "Redacta el plan de respuesta inmediata para un incidente {input} de filtración de credenciales: contención, comunicación y evidencias.",
+      "Draft a {input} severity incident playbook for regional API outage: roles, comms templates, and recovery checkpoints.",
+      "Define acciones para un incidente {input} de corrupción de datos: aislamiento, restauración desde backup y verificación de integridad."
+    ],
+    "pcm_templates": [
+      "TASK=respond TYPE=incident_plan INPUT={input} CHECK=containment,communication,evidence",
+      "TASK=respond TYPE=playbook INPUT={input} CHECK=roles,comms_templates,recovery_checkpoints",
+      "TASK=respond TYPE=incident_plan INPUT={input} CHECK=isolation,backup_restore,integrity_verification"
+    ],
+    "inputs": ["sev1", "sev2", "sev3", "sev4", "sev5"]
+  }
+}

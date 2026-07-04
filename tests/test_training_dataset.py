@@ -66,6 +66,19 @@ def test_split_dataset_stratified():
     assert len(valid) >= 2
 
 
+def test_build_chat_example_glossary_system():
+    from pcm.compression_prompts import PCM_SYSTEM_GLOSSARY
+
+    example = build_chat_example(
+        "test",
+        "TASK=explain TOPIC=test",
+        system_prompt=PCM_SYSTEM_GLOSSARY,
+    )
+    system = example["messages"][0]["content"]
+    assert "EJEMPLOS:" not in system
+    assert "GLOSARIO PCM" in system
+
+
 def test_write_jsonl_roundtrip(tmp_path):
     examples = [build_chat_example("hola", "TASK=explain TOPIC=test")]
     path = tmp_path / "out.jsonl"

@@ -1,0 +1,72 @@
+[
+  {
+    "id": "holdout_000",
+    "text": "Examina detenidamente el siguiente código typescript e identifica errores lógicos, anti-patrones y mejoras de rendimiento. Formato lista.",
+    "category": "holdout",
+    "language": "unknown",
+    "expected_compression": "TASK=review INPUT=typescript CHECK=logic,anti_patterns,perf FORMAT=list"
+  },
+  {
+    "id": "holdout_001",
+    "text": "Revisa este código javascript buscando bugs de concurrencia, fugas de memoria y cuellos de botella. Informe en Markdown por severidad.",
+    "category": "holdout",
+    "language": "unknown",
+    "expected_compression": "TASK=review INPUT=javascript CHECK=race,leak,perf FORMAT=markdown ORDER=severity"
+  },
+  {
+    "id": "holdout_002",
+    "text": "Traduce este documento marketing del en al es manteniendo terminología especializada y tono formal.",
+    "category": "holdout",
+    "language": "unknown",
+    "expected_compression": "TASK=translate FROM=en TO=es STYLE=formal DOMAIN=marketing"
+  },
+  {
+    "id": "holdout_003",
+    "text": "Create an executive summary of this annual financial report with key metrics and strategic highlights.",
+    "category": "holdout",
+    "language": "unknown",
+    "expected_compression": "TASK=summarize INPUT=annual_report FORMAT=list HIGHLIGHT=metrics,strategic_highlights"
+  },
+  {
+    "id": "holdout_004",
+    "text": "Explica qué es cybersecurity a un público principiante usando analogías y ejemplos cotidianos.",
+    "category": "holdout",
+    "language": "unknown",
+    "expected_compression": "TASK=explain TOPIC=cybersecurity AUDIENCE=beginner STYLE=simple USE=analogies,examples"
+  },
+  {
+    "id": "holdout_005",
+    "text": "Write a professional blog post introduction about cloud_migration for developers. Tone: informative and concise.",
+    "category": "holdout",
+    "language": "unknown",
+    "expected_compression": "TASK=write TYPE=blog TOPIC=cloud_migration AUDIENCE=developers STYLE=informative TONE=concise"
+  },
+  {
+    "id": "holdout_006",
+    "text": "Comparar estos dos algoritmos de ordenamiento (quicksort y mergesort) en términos de complejidad temporal, complejidad espacial y casos de uso recomendados.",
+    "category": "holdout",
+    "language": "unknown",
+    "expected_compression": "TASK=compare ITEMS=quicksort,mergesort CRITERIA=time_complexity,space_complexity,use_cases"
+  },
+  {
+    "id": "holdout_007",
+    "text": "Create a detailed roadmap for building a SaaS dashboard with role-based access, analytics, and export features.",
+    "category": "holdout",
+    "language": "unknown",
+    "expected_compression": "TASK=create_plan TYPE=project DOMAIN=saas_dashboard FEATURES=rbac,analytics,export"
+  },
+  {
+    "id": "holdout_008",
+    "text": "Revisa este contrato y señala cláusulas problemáticas para el cliente, especialmente cancelación y penalizaciones.",
+    "category": "holdout",
+    "language": "unknown",
+    "expected_compression": "TASK=review INPUT=contract FOCUS=problematic_clauses CHECK=cancellation_terms,penalties"
+  },
+  {
+    "id": "holdout_009",
+    "text": "Diseña un esquema de base de datos para una app e-commerce con usuarios, productos, pedidos y reseñas. Incluye relaciones e índices.",
+    "category": "holdout",
+    "language": "unknown",
+    "expected_compression": "TASK=design SCHEMA=ecommerce ENTITIES=users,products,orders,reviews REQUIRE=relationships,indexes OPTIMIZE=performance"
+  }
+]

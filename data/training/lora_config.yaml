@@ -1,0 +1,19 @@
+# Configuración LoRA para mlx_lm 0.31+
+# Sobrescribible desde scripts/train_compressor.py (--batch-size, --iters, etc.)
+
+fine_tune_type: lora
+num_layers: 16
+batch_size: 2
+iters: 300
+learning_rate: 1.0e-5
+val_batches: -1
+grad_accumulation_steps: 4
+steps_per_report: 10
+steps_per_eval: 50
+save_every: 100
+max_seq_length: 2048
+mask_prompt: true
+lora_parameters:
+  rank: 16
+  dropout: 0.05
+  scale: 20.0

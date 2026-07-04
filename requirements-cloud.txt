@@ -1,0 +1,8 @@
+unsloth[colab-new] @ git+https://github.com/unslothai/unsloth.git
+torch>=2.1.0
+transformers>=4.43.0,<5.0
+peft>=0.10.0
+datasets>=2.18.0
+trl>=0.8.0
+accelerate>=0.27.0
+bitsandbytes>=0.42.0

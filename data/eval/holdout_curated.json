@@ -1,0 +1,142 @@
+[
+  {
+    "id": "eval_001",
+    "text": "Inspecciona este módulo Rust en busca de data races, uso inseguro de unsafe y patrones que impidan el paralelismo seguro. Entrega hallazgos en Markdown ordenados por criticidad.",
+    "category": "code_review",
+    "expected_compression": "TASK=review INPUT=rust CHECK=data_race,unsafe,parallelism FORMAT=markdown ORDER=criticality",
+    "language": "es"
+  },
+  {
+    "id": "eval_002",
+    "text": "Audit this Go microservice for goroutine leaks, nil pointer risks, and error-handling gaps. Report as a prioritized bullet list.",
+    "category": "code_review",
+    "expected_compression": "TASK=review INPUT=go CHECK=goroutine_leak,nil_pointer,error_handling FORMAT=list ORDER=priority",
+    "language": "en"
+  },
+  {
+    "id": "eval_003",
+    "text": "Evalúa este script SQL embebido en la aplicación: detecta inyección SQL, consultas N+1 y ausencia de índices. Salida JSON estructurada.",
+    "category": "code_review",
+    "expected_compression": "TASK=analyze INPUT=sql CHECK=sql_injection,n_plus_one,missing_indexes FORMAT=json",
+    "language": "es"
+  },
+  {
+    "id": "eval_004",
+    "text": "Review this C# ASP.NET controller for authorization bypass, input validation holes, and logging of sensitive data. Markdown by severity.",
+    "category": "code_review",
+    "expected_compression": "TASK=review INPUT=csharp CHECK=auth_bypass,input_validation,sensitive_logging FORMAT=markdown ORDER=severity",
+    "language": "en"
+  },
+  {
+    "id": "eval_005",
+    "text": "Traduce este manual de usuario de francés a portugués brasileño conservando tono amigable y terminología de producto.",
+    "category": "translation",
+    "expected_compression": "TASK=translate FROM=fr TO=pt_br STYLE=friendly DOMAIN=product_manual",
+    "language": "es"
+  },
+  {
+    "id": "eval_006",
+    "text": "Please translate this legal privacy policy from English to German, keeping formal register and GDPR terminology intact.",
+    "category": "translation",
+    "expected_compression": "TASK=translate FROM=en TO=de STYLE=formal DOMAIN=legal_privacy",
+    "language": "en"
+  },
+  {
+    "id": "eval_007",
+    "text": "Convierte este comunicado de prensa del italiano al español manteniendo el tono corporativo y las cifras exactas.",
+    "category": "translation",
+    "expected_compression": "TASK=translate FROM=it TO=es STYLE=corporate DOMAIN=press_release",
+    "language": "es"
+  },
+  {
+    "id": "eval_008",
+    "text": "Resume este hilo de tickets de soporte destacando incidencias recurrentes, SLA incumplidos y acciones de seguimiento pendientes.",
+    "category": "summarization",
+    "expected_compression": "TASK=summarize INPUT=support_tickets FORMAT=list HIGHLIGHT=recurring_issues,sla_breaches,follow_ups",
+    "language": "es"
+  },
+  {
+    "id": "eval_009",
+    "text": "Summarize this product changelog release notes emphasizing breaking changes, deprecations, and migration steps.",
+    "category": "summarization",
+    "expected_compression": "TASK=summarize INPUT=changelog FORMAT=list HIGHLIGHT=breaking_changes,deprecations,migration_steps",
+    "language": "en"
+  },
+  {
+    "id": "eval_010",
+    "text": "Elabora un resumen del correo del cliente quejándose del retraso en la entrega, extrayendo hechos, impacto y petición explícita.",
+    "category": "summarization",
+    "expected_compression": "TASK=summarize INPUT=customer_email FORMAT=list HIGHLIGHT=facts,impact,explicit_request",
+    "language": "es"
+  },
+  {
+    "id": "eval_011",
+    "text": "Explica qué es la computación cuántica a un estudiante de bachillerato con analogías y sin jerga matemática avanzada.",
+    "category": "explanation",
+    "expected_compression": "TASK=explain TOPIC=quantum_computing AUDIENCE=high_school STYLE=simple USE=analogies",
+    "language": "es"
+  },
+  {
+    "id": "eval_012",
+    "text": "Explain container orchestration to a product manager using business analogies and avoiding low-level infrastructure details.",
+    "category": "explanation",
+    "expected_compression": "TASK=explain TOPIC=container_orchestration AUDIENCE=product_manager STYLE=simple USE=analogies",
+    "language": "en"
+  },
+  {
+    "id": "eval_013",
+    "text": "Redacta un post de LinkedIn anunciando nuestra certificación ISO 27001. Tono profesional, breve, con beneficios para clientes enterprise.",
+    "category": "writing",
+    "expected_compression": "TASK=write TYPE=linkedin_post TOPIC=iso_27001 STYLE=professional TONE=concise INCLUDE=enterprise_benefits",
+    "language": "es"
+  },
+  {
+    "id": "eval_014",
+    "text": "Draft a README section for contributors explaining how to run tests locally and open a pull request. Clear steps, developer audience.",
+    "category": "writing",
+    "expected_compression": "TASK=write TYPE=readme_section AUDIENCE=developers STYLE=clear INCLUDE=run_tests,open_pr",
+    "language": "en"
+  },
+  {
+    "id": "eval_015",
+    "text": "Compara PostgreSQL y MongoDB para un catálogo de productos con lecturas frecuentes y escrituras moderadas.",
+    "category": "comparison",
+    "expected_compression": "TASK=compare ITEMS=postgresql,mongodb CRITERIA=read_patterns,write_patterns,product_catalog_fit",
+    "language": "es"
+  },
+  {
+    "id": "eval_016",
+    "text": "Compare Terraform versus Pulumi for a small platform team regarding learning curve, state management, and CI integration.",
+    "category": "comparison",
+    "expected_compression": "TASK=compare ITEMS=terraform,pulumi CRITERIA=learning_curve,state_management,ci_integration",
+    "language": "en"
+  },
+  {
+    "id": "eval_017",
+    "text": "Revisa este acuerdo de nivel de servicio y marca cláusulas desfavorables para el proveedor, especialmente penalizaciones y exclusiones de responsabilidad.",
+    "category": "legal_review",
+    "expected_compression": "TASK=review INPUT=sla FOCUS=unfavorable_clauses CHECK=penalties,liability_exclusions",
+    "language": "es"
+  },
+  {
+    "id": "eval_018",
+    "text": "Elabora un plan de migración de monolito a microservicios para un equipo de 8 desarrolladores con fases, riesgos y criterios de rollback.",
+    "category": "planning",
+    "expected_compression": "TASK=create_plan TYPE=migration DOMAIN=monolith_to_microservices FEATURES=phases,risk_mitigation,rollback_criteria",
+    "language": "es"
+  },
+  {
+    "id": "eval_019",
+    "text": "Diseña el esquema de base de datos para un sistema de reservas hoteleras con habitaciones, tarifas estacionales y políticas de cancelación.",
+    "category": "database_design",
+    "expected_compression": "TASK=design SCHEMA=hotel_booking ENTITIES=rooms,seasonal_rates,cancellation_policies REQUIRE=relationships,indexes OPTIMIZE=availability_queries",
+    "language": "es"
+  },
+  {
+    "id": "eval_020",
+    "text": "Design a schema for a multi-tenant analytics warehouse tracking events, tenants, and aggregated metrics with partition-friendly layout.",
+    "category": "database_design",
+    "expected_compression": "TASK=design SCHEMA=analytics_warehouse ENTITIES=events,tenants,aggregated_metrics REQUIRE=partitioning,multi_tenant_isolation OPTIMIZE=query_performance",
+    "language": "en"
+  }
+]

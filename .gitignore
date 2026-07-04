@@ -77,3 +77,10 @@ data/e2e/runs/
 data/training/checkpoints/
 data/training/*.jsonl
 !data/training/.gitkeep
+data/training/v2/*.jsonl
+!data/training/v2/.gitkeep
+data/training/v2/checkpoints/
+
+# Artefactos locales RunPod / export (no versionar)
+workspace/
+workspace.zip

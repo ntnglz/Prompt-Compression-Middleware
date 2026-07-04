@@ -1,0 +1,9 @@
+{
+  "version": "v2a-templates-only",
+  "total": 402,
+  "train": 367,
+  "valid": 35,
+  "excluded_hashes": 71,
+  "teacher": false,
+  "seed": 100
+}

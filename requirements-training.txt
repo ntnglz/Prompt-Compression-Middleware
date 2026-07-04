@@ -1,4 +1,9 @@
 # Fine-tuning PCM — instalar solo en Mac de entrenamiento
 # pip install -r requirements-training.txt
+#
+# Nota: mlx-lm 0.31.x declara transformers>=5 pero su registro de
+# NewlineTokenizer falla con transformers 5.x (AttributeError __module__).
+# Pin temporal hasta que mlx-lm lo corrija upstream.
 mlx-lm>=0.21.0
 mlx>=0.22.0
+transformers>=4.43.0,<5.0.0

@@ -1,0 +1,212 @@
+[
+  {
+    "id": "eval_syn_code_review_0_0",
+    "text": "Audita este componente React TypeScript buscando efectos secundarios innecesarios, renders redundantes y hooks mal utilizados. Entrega un informe Markdown por severidad.",
+    "category": "code_review",
+    "language": "es",
+    "expected_compression": "TASK=review INPUT=typescript_react CHECK=side_effects,redundant_renders,hooks FORMAT=markdown ORDER=severity"
+  },
+  {
+    "id": "eval_syn_code_review_0_1",
+    "text": "Inspect this Kotlin Android codebase for lifecycle leaks, main-thread blocking calls, and missing null-safety annotations. Output as a numbered list.",
+    "category": "code_review",
+    "language": "en",
+    "expected_compression": "TASK=review INPUT=kotlin CHECK=lifecycle_leak,main_thread_block,null_safety FORMAT=list ORDER=sequence"
+  },
+  {
+    "id": "eval_syn_code_review_0_2",
+    "text": "Examina este pipeline de CI/CD en YAML: detecta secretos expuestos, permisos excesivos y pasos que no bloquean ante fallos. Resultado JSON estructurado.",
+    "category": "code_review",
+    "language": "es",
+    "expected_compression": "TASK=analyze INPUT=cicd_yaml CHECK=exposed_secrets,excessive_permissions,non_blocking_steps FORMAT=json"
+  },
+  {
+    "id": "eval_syn_translation_0_0",
+    "text": "Localiza este fichero de strings de una app móvil del japonés al coreano conservando placeholders y límites de caracteres.",
+    "category": "translation",
+    "language": "es",
+    "expected_compression": "TASK=translate FROM=ja TO=ko STYLE=formal DOMAIN=mobile_strings"
+  },
+  {
+    "id": "eval_syn_translation_0_1",
+    "text": "Translate this scientific abstract from Portuguese to English while preserving citation numbers and technical abbreviations.",
+    "category": "translation",
+    "language": "en",
+    "expected_compression": "TASK=translate FROM=pt TO=en STYLE=academic DOMAIN=scientific_abstract"
+  },
+  {
+    "id": "eval_syn_translation_0_2",
+    "text": "Adapta este catálogo de especificaciones técnicas del alemán al español mexicano manteniendo unidades métricas y nomenclatura ISO.",
+    "category": "translation",
+    "language": "es",
+    "expected_compression": "TASK=translate FROM=de TO=es_mx STYLE=technical DOMAIN=spec_catalog"
+  },
+  {
+    "id": "eval_syn_summarization_0",
+    "text": "Condensa este informe de auditoría interna resaltando hallazgos críticos, recomendaciones y plazos de remediación.",
+    "category": "summarization",
+    "language": "es",
+    "expected_compression": "TASK=summarize INPUT=audit_report FORMAT=list HIGHLIGHT=critical_findings,recommendations,remediation_deadlines"
+  },
+  {
+    "id": "eval_syn_summarization_1",
+    "text": "Prepare a brief summary of this court hearing transcript focusing on objections raised, rulings, and next hearing date.",
+    "category": "summarization",
+    "language": "en",
+    "expected_compression": "TASK=summarize INPUT=court_transcript FORMAT=list HIGHLIGHT=objections,rulings,next_hearing"
+  },
+  {
+    "id": "eval_syn_summarization_2",
+    "text": "Resume este documento de arquitectura de software destacando componentes principales, dependencias externas y riesgos técnicos identificados.",
+    "category": "summarization",
+    "language": "es",
+    "expected_compression": "TASK=summarize INPUT=architecture_doc FORMAT=list HIGHLIGHT=components,external_dependencies,technical_risks"
+  },
+  {
+    "id": "eval_syn_explanation_0_0",
+    "text": "Describe cómo funciona una red blockchain a un director financiero sin entrar en detalles criptográficos.",
+    "category": "explanation",
+    "language": "es",
+    "expected_compression": "TASK=explain TOPIC=blockchain AUDIENCE=finance_director STYLE=simple USE=non_technical"
+  },
+  {
+    "id": "eval_syn_explanation_0_1",
+    "text": "Explain the CAP theorem to junior backend engineers using practical database examples.",
+    "category": "explanation",
+    "language": "en",
+    "expected_compression": "TASK=explain TOPIC=cap_theorem AUDIENCE=junior_engineer STYLE=practical USE=examples"
+  },
+  {
+    "id": "eval_syn_explanation_0_2",
+    "text": "Aclara qué es el aprendizaje federado para un responsable de cumplimiento normativo, en lenguaje claro y breve.",
+    "category": "explanation",
+    "language": "es",
+    "expected_compression": "TASK=explain TOPIC=federated_learning AUDIENCE=compliance_officer STYLE=clear USE=plain_language"
+  },
+  {
+    "id": "eval_syn_writing_0_0",
+    "text": "Escribe un comunicado interno informando del corte de mantenimiento del sistema de facturación el próximo domingo. Tono neutral, incluye horario UTC y canal de soporte.",
+    "category": "writing",
+    "language": "es",
+    "expected_compression": "TASK=write TYPE=internal_notice TOPIC=billing_maintenance STYLE=neutral TONE=formal INCLUDE=utc_schedule,support_channel"
+  },
+  {
+    "id": "eval_syn_writing_0_1",
+    "text": "Compose a product onboarding email for new subscribers explaining how to connect their first data source. Friendly tone, three short sections.",
+    "category": "writing",
+    "language": "en",
+    "expected_compression": "TASK=write TYPE=email TOPIC=product_onboarding STYLE=friendly TONE=concise INCLUDE=connect_data_source,three_sections"
+  },
+  {
+    "id": "eval_syn_writing_0_2",
+    "text": "Redacta la descripción de una vacante de ingeniero de datos senior: responsabilidades clave, requisitos técnicos y beneficios. Máximo 200 palabras.",
+    "category": "writing",
+    "language": "es",
+    "expected_compression": "TASK=write TYPE=job_posting TOPIC=senior_data_engineer STYLE=professional TONE=concise INCLUDE=responsibilities,requirements,benefits"
+  },
+  {
+    "id": "eval_syn_comparison_0_0",
+    "text": "Contrasta Apache Kafka y Amazon SQS para un flujo de eventos de pedidos con picos estacionales.",
+    "category": "comparison",
+    "language": "es",
+    "expected_compression": "TASK=compare ITEMS=kafka,sqs CRITERIA=seasonal_peaks,order_events,operational_overhead"
+  },
+  {
+    "id": "eval_syn_comparison_0_1",
+    "text": "Compare React Server Components versus traditional SSR for a content-heavy marketing site.",
+    "category": "comparison",
+    "language": "en",
+    "expected_compression": "TASK=compare ITEMS=rsc,traditional_ssr CRITERIA=content_heavy_sites,seo,hydration_cost"
+  },
+  {
+    "id": "eval_syn_comparison_0_2",
+    "text": "Evalúa GitHub Actions frente a GitLab CI para equipos distribuidos en Europa y América.",
+    "category": "comparison",
+    "language": "es",
+    "expected_compression": "TASK=compare ITEMS=github_actions,gitlab_ci CRITERIA=distributed_teams,runner_cost,cache_strategy"
+  },
+  {
+    "id": "eval_syn_planning_0_0",
+    "text": "Define un roadmap trimestral para lanzar una API pública versionada con autenticación OAuth2, rate limiting y documentación OpenAPI.",
+    "category": "planning",
+    "language": "es",
+    "expected_compression": "TASK=create_plan TYPE=roadmap DOMAIN=public_api FEATURES=oauth2,rate_limiting,openapi_docs"
+  },
+  {
+    "id": "eval_syn_planning_0_1",
+    "text": "Outline a disaster recovery plan for a production PostgreSQL cluster including backup frequency, RPO/RTO targets, and failover drills.",
+    "category": "planning",
+    "language": "en",
+    "expected_compression": "TASK=create_plan TYPE=disaster_recovery DOMAIN=postgresql_cluster FEATURES=backup_frequency,rpo_rto,failover_drills"
+  },
+  {
+    "id": "eval_syn_planning_0_2",
+    "text": "Propón un plan de capacitación de seis semanas para adoptar TypeScript en un monorepo JavaScript existente.",
+    "category": "planning",
+    "language": "es",
+    "expected_compression": "TASK=create_plan TYPE=training DOMAIN=typescript_adoption FEATURES=six_weeks,monorepo_migration,team_enablement"
+  },
+  {
+    "id": "eval_syn_legal_review_0_0",
+    "text": "Analiza este contrato de licencia SaaS e identifica limitaciones de responsabilidad, renovación automática y restricciones de uso de datos.",
+    "category": "legal_review",
+    "language": "es",
+    "expected_compression": "TASK=review INPUT=saas_license FOCUS=unfavorable_clauses CHECK=liability_limits,auto_renewal,data_restrictions"
+  },
+  {
+    "id": "eval_syn_legal_review_0_1",
+    "text": "Review this employment agreement for non-compete scope, intellectual property assignment, and severance conditions unfavorable to the employee.",
+    "category": "legal_review",
+    "language": "en",
+    "expected_compression": "TASK=review INPUT=employment_agreement FOCUS=employee_risk CHECK=non_compete,ip_assignment,severance"
+  },
+  {
+    "id": "eval_syn_legal_review_0_2",
+    "text": "Examina este acuerdo de procesamiento de datos (DPA) y señala obligaciones de notificación, subprocesadores no autorizados y plazos de respuesta ante brechas.",
+    "category": "legal_review",
+    "language": "es",
+    "expected_compression": "TASK=review INPUT=dpa FOCUS=data_processor_obligations CHECK=breach_notification,subprocessors,response_deadlines"
+  },
+  {
+    "id": "eval_syn_database_design_0_0",
+    "text": "Modela la base de datos de una plataforma de suscripciones con planes, periodos de facturación, cupones y historial de pagos.",
+    "category": "database_design",
+    "language": "es",
+    "expected_compression": "TASK=design SCHEMA=subscription_platform ENTITIES=plans,billing_periods,coupons,payment_history REQUIRE=relationships,indexes OPTIMIZE=billing_queries"
+  },
+  {
+    "id": "eval_syn_database_design_0_1",
+    "text": "Design a schema for a learning management system with courses, enrollments, quizzes, and progress tracking optimized for student dashboards.",
+    "category": "database_design",
+    "language": "en",
+    "expected_compression": "TASK=design SCHEMA=lms ENTITIES=courses,enrollments,quizzes,progress REQUIRE=relationships,indexes OPTIMIZE=student_dashboards"
+  },
+  {
+    "id": "eval_syn_database_design_0_2",
+    "text": "Diseña el esquema relacional para un inventario multialmacén con transferencias entre sedes, lotes con caducidad y alertas de stock mínimo.",
+    "category": "database_design",
+    "language": "es",
+    "expected_compression": "TASK=design SCHEMA=multi_warehouse_inventory ENTITIES=warehouses,transfers,batches,stock_alerts REQUIRE=relationships,indexes OPTIMIZE=stock_queries"
+  },
+  {
+    "id": "eval_syn_refactoring_0_0",
+    "text": "Propón una refactorización de este servicio legacy PHP separando lógica de negocio, acceso a datos y presentación. Lista pasos ordenados por impacto.",
+    "category": "refactoring",
+    "language": "es",
+    "expected_compression": "TASK=review INPUT=php_legacy CHECK=separation_of_concerns,business_logic,data_access FORMAT=list ORDER=impact"
+  },
+  {
+    "id": "eval_syn_refactoring_0_1",
+    "text": "Suggest refactoring this Node.js Express API to reduce controller bloat, extract validation middleware, and improve unit test coverage. Prioritized list.",
+    "category": "refactoring",
+    "language": "en",
+    "expected_compression": "TASK=review INPUT=nodejs_express CHECK=controller_bloat,validation_middleware,test_coverage FORMAT=list ORDER=priority"
+  },
+  {
+    "id": "eval_syn_refactoring_0_2",
+    "text": "Reestructura este módulo Java con acoplamiento alto entre capas: extrae interfaces, reduce dependencias circulares y mejora la testabilidad. Salida en lista.",
+    "category": "refactoring",
+    "language": "es",
+    "expected_compression": "TASK=review INPUT=java CHECK=circular_dependencies,layer_coupling,testability FORMAT=list ORDER=impact"
+  }
+]

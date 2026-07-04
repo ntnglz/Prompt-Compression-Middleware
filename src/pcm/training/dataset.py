@@ -2,13 +2,14 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import random
 import re
 from pathlib import Path
 from typing import Any
 
-from pcm.compressor import COMPRESSION_SYSTEM_PROMPT
+from pcm.compression_prompts import PCM_SYSTEM_FULL, PCM_SYSTEM_GLOSSARY
 
 FIELD_PATTERN = re.compile(r"([A-Za-z_][A-Za-z0-9_]*)=")
 
@@ -21,6 +22,73 @@ VALID_PCM_KEYS = frozenset({
 })
 
 USER_PREFIX = "Prompt a comprimir:\n"
+
+
+def normalize_user_text(text: str) -> str:
+    """Normaliza texto de usuario para dedup y leakage checks."""
+    t = text.strip()
+    if t.startswith(USER_PREFIX.strip()):
+        t = t.removeprefix(USER_PREFIX).strip()
+    if t.startswith("Prompt a comprimir:"):
+        t = t.split("\n", 1)[-1].strip()
+    return " ".join(t.split())
+
+
+def user_text_hash(text: str) -> str:
+    return hashlib.sha256(normalize_user_text(text).encode()).hexdigest()
+
+
+def extract_user_text(example: dict[str, Any]) -> str:
+    """Extrae el texto usuario de un ejemplo chat."""
+    for msg in example.get("messages", []):
+        if msg.get("role") == "user":
+            return normalize_user_text(msg["content"])
+    raise ValueError("Ejemplo sin mensaje user")
+
+
+def load_excluded_hashes(root: Path | None = None) -> set[str]:
+    """Carga hashes de textos prohibidos en train (eval + gold + e2e)."""
+    root = root or Path(__file__).resolve().parents[3]
+    hashes: set[str] = set()
+
+    manifest = root / "data" / "eval" / "excluded_manifest.json"
+    if manifest.exists():
+        data = json.loads(manifest.read_text(encoding="utf-8"))
+        hashes.update(data.get("hashes", []))
+        return hashes
+
+    for path in (
+        root / "data" / "example_prompts.json",
+        root / "data" / "eval" / "holdout_curated.json",
+        root / "data" / "eval" / "holdout_synthetic.json",
+    ):
+        if not path.exists():
+            continue
+        items = json.loads(path.read_text(encoding="utf-8"))
+        for item in items:
+            text = item.get("text") or item.get("instruction", "")
+            if text:
+                hashes.add(user_text_hash(text))
+
+    e2e = root / "data" / "e2e_prompts.json"
+    if e2e.exists():
+        for item in json.loads(e2e.read_text(encoding="utf-8")):
+            instruction = item.get("instruction", "")
+            if instruction:
+                hashes.add(user_text_hash(instruction))
+
+    return hashes
+
+
+def check_leakage(train_items: list[dict], excluded: set[str]) -> list[dict]:
+    """Devuelve ejemplos de train cuyo hash está en excluded."""
+    leaks: list[dict] = []
+    for item in train_items:
+        text = extract_user_text(item)
+        h = user_text_hash(text)
+        if h in excluded:
+            leaks.append({"user_text": text[:120], "user_hash": h})
+    return leaks
 
 
 def validate_pcm_output(text: str) -> tuple[bool, list[str]]:
@@ -45,11 +113,17 @@ def validate_pcm_output(text: str) -> tuple[bool, list[str]]:
     return (len(errors) == 0, errors)
 
 
-def build_chat_example(user_text: str, assistant_pcm: str) -> dict[str, Any]:
+def build_chat_example(
+    user_text: str,
+    assistant_pcm: str,
+    *,
+    system_prompt: str | None = None,
+) -> dict[str, Any]:
     """Construye un ejemplo chat para mlx-lm."""
+    system = system_prompt or PCM_SYSTEM_FULL
     return {
         "messages": [
-            {"role": "system", "content": COMPRESSION_SYSTEM_PROMPT},
+            {"role": "system", "content": system},
             {"role": "user", "content": f"{USER_PREFIX}{user_text.strip()}"},
             {"role": "assistant", "content": assistant_pcm.strip()},
         ]

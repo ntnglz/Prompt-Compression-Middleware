@@ -1,0 +1,146 @@
+{
+  "generated_at": "2026-07-04T05:51:13.021807+00:00",
+  "compressor_model": "granite4.1:3b",
+  "target_model": "mistral-medium-3.5",
+  "reasoning_effort": "none",
+  "summary": {
+    "total_prompts": 4,
+    "avg_compression_ratio": 0.4713,
+    "avg_compression_time_ms": 358.81,
+    "avg_original_llm_time_ms": 4375.89,
+    "avg_compressed_llm_time_ms": 3869.3,
+    "avg_response_similarity": 0.9325,
+    "total_original_input_tokens": 1233,
+    "total_compressed_input_tokens": 1207,
+    "input_tokens_saved": 26,
+    "total_cost_original_usd": 0.02,
+    "total_cost_compressed_usd": 0.0119,
+    "total_pipeline_time_ms": 34416.02
+  },
+  "entries": [
+    {
+      "id": "e2e_001",
+      "category": "code_review",
+      "language": "es",
+      "original_prompt": "Analiza cuidadosamente este código Python buscando posibles condiciones de carrera, fugas de memoria y oportunidades de optimización. Devuelve un informe en Markdown organizado por severidad.\n\n```python\nimport threading\n\nCACHE = {}\n\ndef get_user(user_id):\n    if user_id not in CACHE:\n        CACHE[user_id] = expensive_fetch(user_id)\n    return CACHE[user_id]\n\ndef expensive_fetch(user_id):\n    users = []\n    for i in range(100000):\n        users.append({\"id\": i, \"data\": \"x\" * 100})\n    return users[user_id % len(users)]\n\ncounter = 0\n\ndef increment():\n    global counter\n    val = counter\n    counter = val + 1\n\nthreads = [threading.Thread(target=increment) for _ in range(10)]\nfor t in threads:\n    t.start()\nfor t in threads:\n    t.join()\n```",
+      "compressed_prompt": "TASK=review INPUT=python CHECK=race,leak,perf FORMAT=markdown ORDER=severity",
+      "compression_time_ms": 419.09,
+      "compression_ratio": 0.5,
+      "original_llm": {
+        "content": "# **Informe de Análisis de Código Python**\n\n## **🔴 Crítico (Condiciones de Carrera)**\n1. **Variable global `counter` sin sincronización**\n   - **Problema**: Múltiples hilos acceden y modifican `counter` simultáneamente sin bloqueos (`Lock`), lo que genera **condiciones de carrera**.\n   - **Impacto**: El valor final de `counter` puede ser menor a 10 (ejemplo clásico de *race condition* en incrementos).\n   - **Solución**: Usar `threading.Lock` para proteger el acceso a `counter`:\n     ```python\n     lock = threading.Lock()\n     def increment():\n         global counter\n         with lock:\n             counter += 1\n     ```\n\n2. **Cache global `CACHE` sin sincronización**\n   - **Problema**: `get_user` modifica `CACHE` sin protección. Si dos hilos llaman a `get_user` con el mismo `user_id` no presente en caché, ambos podrían ejecutar `expensive_fetch` y sobrescribir el resultado.\n   - **Impacto**: Pérdida de eficiencia (cálculo redundante) y posible corrupción de datos si `expensive_fetch` no es determinista.\n   - **Solución**: Usar un `Lock` o `threading.RLock` para el acceso a `CACHE`, o emplear `functools.lru_cache` (que es *thread-safe* en CPython).\n\n---\n\n## **🟡 Alto (Fugas de Memoria)**\n1. **Crecimiento ilimitado de `CACHE`**\n   - **Problema**: `CACHE` almacena todos los `user_id` solicitados sin límite, lo que puede causar **fuga de memoria** en aplicaciones de larga duración.\n   - **Impacto**: Consumo de memoria crece indefinidamente.\n   - **Solución**:\n     - Usar un caché con límite de tamaño (ej: `functools.lru_cache(maxsize=128)`).\n     - Implementar un mecanismo de expiración (ej: `cachetools.TTLCache`).\n\n2. **Lista `users` en `expensive_fetch`**\n   - **Problema**: Se crea una lista de 100,000 elementos en cada llamada a `expensive_fetch`, pero solo se usa uno. Esto es ineficiente y genera presión en el *garbage collector*.\n   - **Impacto**: Alto uso de memoria temporal y posible fragmentación.\n   - **Solución**: Generar solo el elemento necesario (evitar crear la lista completa):\n     ```python\n     def expensive_fetch(user_id):\n         return {\"id\": user_id % 100000, \"data\": \"x\" * 100}\n     ```\n\n---\n\n## **🟢 Medio (Oportunidades de Optimización)**\n1. **`expensive_fetch` es ineficiente**\n   - **Problema**: Simula una operación costosa, pero su implementación actual es artificialmente lenta (crea una lista enorme).\n   - **Recomendación**: Si esto representa una llamada a una API o base de datos, considerar:\n     - *Caching* (ya mencionado).\n     - *Lazy loading* (cargar datos bajo demanda).\n     - Usar generadores si se procesan muchos elementos.\n\n2. **Uso de `global` en `increment`**\n   - **Problema**: Las variables globales son difíciles de mantener y probar.\n   - **Recomendación**: Evitar globales. Usar una clase con atributos o pasar el contador como argumento.\n\n3. **Creación de hilos sin control de recursos**\n   - **Problema**: Se crean 10 hilos sin límite. En aplicaciones reales, esto puede agotar recursos.\n   - **Recomendación**: Usar un *thread pool* (ej: `concurrent.futures.ThreadPoolExecutor`) para limitar el número de hilos activos.\n\n---\n\n## **🔵 Bajo (Estilo y Buenas Prácticas)**\n1. **Nombres de variables poco descriptivos**\n   - `users` en `expensive_fetch` sugiere una lista de usuarios, pero solo se usa para devolver uno. Mejor nombre: `mock_user_data`.\n2. **Falta de *type hints***\n   - Añadir anotaciones de tipo para mejorar legibilidad y detección de errores:\n     ```python\n     from typing import Dict, Any\n     CACHE: Dict[int, Any] = {}\n     def get_user(user_id: int) -> Any: ...\n     ```\n\n---\n\n## **Resumen de Acciones Recomendadas**\n| Severidad  | Problema                          | Solución                                  |\n|------------|-----------------------------------|-------------------------------------------|\n| 🔴 Crítico | Race condition en `counter`       | Usar `threading.Lock`                     |\n| 🔴 Crítico | Race condition en `CACHE`         | Usar `Lock` o `lru_cache`                 |\n| 🟡 Alto    | Fuga de memoria en `CACHE`         | Limitar tamaño del caché                  |\n| 🟡 Alto    | Uso ineficiente de memoria en `expensive_fetch` | Optimizar la función |\n| 🟢 Medio   | Diseño poco escalable             | Usar *thread pool* y evitar globales      |",
+        "processing_time_ms": 8980.32,
+        "input_tokens": 332,
+        "output_tokens": 1164,
+        "total_tokens": 1496,
+        "estimated_cost_usd": 0.009228,
+        "truncated": false
+      },
+      "compressed_llm": {
+        "content": "### Revisión de código Python (enfoque en *race conditions*, fugas de memoria y rendimiento)\n\n#### 🔴 **Problemas críticos (Race Condition)**\n1. **`CACHE` no es thread-safe**:\n   - Múltiples hilos pueden acceder/modificar `CACHE` simultáneamente en `get_user()`.\n   - **Solución**: Usar `threading.Lock` para sincronizar el acceso:\n     ```python\n     CACHE = {}\n     CACHE_LOCK = threading.Lock()\n\n     def get_user(user_id):\n         with CACHE_LOCK:\n             if user_id not in CACHE:\n                 CACHE[user_id] = expensive_fetch(user_id)\n             return CACHE[user_id]\n     ```\n\n2. **`counter` no es thread-safe**:\n   - La operación `increment()` no es atómica (`val = counter` + `counter = val + 1`).\n   - **Solución**: Usar `threading.Lock` o `threading.Atomic` (Python 3.12+):\n     ```python\n     counter = 0\n     counter_lock = threading.Lock()\n\n     def increment():\n         global counter\n         with counter_lock:\n             counter += 1\n     ```\n\n---\n\n#### 🟡 **Problemas moderados (Fugas de memoria)**\n1. **`CACHE` crece indefinidamente**:\n   - No hay límite de tamaño ni mecanismo de limpieza (ej: LRU cache).\n   - **Solución**: Usar `functools.lru_cache` o implementar un límite:\n     ```python\n     from functools import lru_cache\n\n     @lru_cache(maxsize=128)\n     def get_user(user_id):\n         return expensive_fetch(user_id)\n     ```\n\n2. **`users` en `expensive_fetch`**:\n   - La lista `users` se recrea en cada llamada, consumiendo memoria innecesariamente.\n   - **Solución**: Precomputar `users` una vez (fuera de la función) o usar generadores.\n\n---\n\n#### 🟢 **Problemas leves (Rendimiento)**\n1. **`expensive_fetch` es ineficiente**:\n   - Crea una lista de 100,000 elementos en cada llamada.\n   - **Solución**: Simplificar la lógica (ej: devolver datos mock directamente):\n     ```python\n     def expensive_fetch(user_id):\n         return {\"id\": user_id, \"data\": \"x\" * 100}\n     ```\n\n2. **Uso de `global`**:\n   - Evitar `global` en funciones. Mejor pasar `counter` como argumento o usar clases.\n\n---\n---\n### Resumen de severidad\n| **Tipo**       | **Problema**               | **Severidad** | **Solución**                          |\n|----------------|---------------------------|---------------|---------------------------------------|\n| Race Condition | `CACHE` no es thread-safe | 🔴 Crítico    | `threading.Lock`                      |\n| Race Condition | `counter` no es atómico    | 🔴 Crítico    | `threading.Lock`                      |\n| Fuga de memoria| `CACHE` sin límite         | 🟡 Moderado   | `lru_cache` o límite manual          |\n| Rendimiento    | `expensive_fetch` ineficiente | 🟢 Leve    | Optimizar lógica o precomputar datos |",
+        "processing_time_ms": 4912.57,
+        "input_tokens": 323,
+        "output_tokens": 738,
+        "total_tokens": 1061,
+        "estimated_cost_usd": 0.006019,
+        "truncated": false
+      },
+      "response_similarity": 0.9,
+      "response_evaluation": "good",
+      "compressed_user_prompt": "TASK=review INPUT=python CHECK=race,leak,perf FORMAT=markdown ORDER=severity\n\n```python\nimport threading\n\nCACHE = {}\n\ndef get_user(user_id):\n    if user_id not in CACHE:\n        CACHE[user_id] = expensive_fetch(user_id)\n    return CACHE[user_id]\n\ndef expensive_fetch(user_id):\n    users = []\n    for i in range(100000):\n        users.append({\"id\": i, \"data\": \"x\" * 100})\n    return users[user_id % len(users)]\n\ncounter = 0\n\ndef increment():\n    global counter\n    val = counter\n    counter = val + 1\n\nthreads = [threading.Thread(target=increment) for _ in range(10)]\nfor t in threads:\n    t.start()\nfor t in threads:\n    t.join()\n```",
+      "payload_chars": 541
+    },
+    {
+      "id": "e2e_002",
+      "category": "code_review",
+      "language": "en",
+      "original_prompt": "Generate a comprehensive analysis of this JavaScript code, identifying all potential security vulnerabilities, performance bottlenecks, and code smells. Present the findings in a structured JSON format.\n\n```javascript\nconst express = require('express');\nconst app = express();\nconst db = { query: (sql) => sql };\nconst users = {};\n\napp.get('/user', (req, res) => {\n  const id = req.query.id;\n  db.query('SELECT * FROM users WHERE id = ' + id);\n  res.send(users[id]);\n});\n\napp.get('/search', (req, res) => {\n  let results = [];\n  for (let i = 0; i < 1000000; i++) {\n    if (String(i).includes(req.query.q)) {\n      results.push(i);\n    }\n  }\n  res.json(results);\n});\n\napp.use((err, req, res, next) => {\n  res.send(err.stack);\n});\n\napp.listen(3000);\n```",
+      "compressed_prompt": "TASK=analyze INPUT=javascript CHECK=security,perf,code_smells FORMAT=json",
+      "compression_time_ms": 367.41,
+      "compression_ratio": 0.4848,
+      "original_llm": {
+        "content": "```json\n{\n  \"security_vulnerabilities\": [\n    {\n      \"type\": \"SQL Injection\",\n      \"location\": \"/user endpoint\",\n      \"description\": \"Direct concatenation of user input (req.query.id) into SQL query without sanitization or parameterization.\",\n      \"severity\": \"Critical\",\n      \"fix\": \"Use parameterized queries or an ORM (e.g., `db.query('SELECT * FROM users WHERE id = ?', [id])`).\"\n    },\n    {\n      \"type\": \"Information Exposure\",\n      \"location\": \"Error handling middleware\",\n      \"description\": \"Full error stack traces are sent to the client, potentially exposing sensitive system details.\",\n      \"severity\": \"High\",\n      \"fix\": \"Sanitize error messages (e.g., `res.status(500).send('Internal Server Error')`).\"\n    },\n    {\n      \"type\": \"Insecure Data Access\",\n      \"location\": \"/user endpoint\",\n      \"description\": \"Direct access to the `users` object without validation or access control.\",\n      \"severity\": \"Medium\",\n      \"fix\": \"Implement authentication/authorization checks and validate `id` exists in `users`.\"\n    }\n  ],\n  \"performance_bottlenecks\": [\n    {\n      \"type\": \"Inefficient Loop\",\n      \"location\": \"/search endpoint\",\n      \"description\": \"Loop runs 1,000,000 iterations unconditionally, converting each number to a string and checking for substring matches.\",\n      \"severity\": \"Critical\",\n      \"fix\": \"Use a more efficient algorithm (e.g., regex or database search) or paginate results.\"\n    },\n    {\n      \"type\": \"Blocking Operations\",\n      \"location\": \"/search endpoint\",\n      \"description\": \"Synchronous, CPU-intensive operation blocks the Node.js event loop.\",\n      \"severity\": \"High\",\n      \"fix\": \"Offload to a worker thread or use a non-blocking approach (e.g., streaming).\"\n    }\n  ],\n  \"code_smells\": [\n    {\n      \"type\": \"Hardcoded Mock\",\n      \"location\": \"Database (db) object\",\n      \"description\": \"Mock `db.query` simply returns the input SQL string, which is not a realistic database interaction.\",\n      \"severity\": \"Low\",\n      \"fix\": \"Replace with a real database client (e.g., `mysql2`, `pg`).\"\n    },\n    {\n      \"type\": \"Unused Variable\",\n      \"location\": \"/user endpoint\",\n      \"description\": \"Result of `db.query` is not stored or used.\",\n      \"severity\": \"Low\",\n      \"fix\": \"Remove the query or use its result (e.g., `const user = db.query(...); res.send(user);`).\"\n    },\n    {\n      \"type\": \"Lack of Input Validation\",\n      \"location\": \"All endpoints\",\n      \"description\": \"No validation of `req.query.id` or `req.query.q` (e.g., type, length, or format checks).\",\n      \"severity\": \"Medium\",\n      \"fix\": \"Add validation (e.g., `if (!id || isNaN(id)) return res.status(400).send('Invalid ID')`).\"\n    },\n    {\n      \"type\": \"Magic Number\",\n      \"location\": \"/search endpoint\",\n      \"description\": \"Hardcoded loop limit (1,000,000) without explanation or configurability.\",\n      \"severity\": \"Low\",\n      \"fix\": \"Use a named constant (e.g., `const MAX_ITERATIONS = 1000000;`).\"\n    },\n    {\n      \"type\": \"No Rate Limiting\",\n      \"location\": \"All endpoints\",\n      \"description\": \"No protection against brute-force or DoS attacks (e.g., repeated calls to `/search`).\",\n      \"severity\": \"Medium\",\n      \"fix\": \"Implement rate limiting (e.g., `express-rate-limit` middleware).\"\n    }\n  ],\n  \"general_recommendations\": [\n    \"Use environment variables for configuration (e.g., port, database credentials).\",\n    \"Add logging for debugging and auditing (e.g., `morgan` for HTTP requests).\",\n    \"Use HTTPS in production to encrypt traffic.\",\n    \"Add CORS headers if the API is accessed from web browsers.\",\n    \"Consider using TypeScript for static type checking.\"\n  ]\n}\n```",
+        "processing_time_ms": 6019.31,
+        "input_tokens": 338,
+        "output_tokens": 943,
+        "total_tokens": 1281,
+        "estimated_cost_usd": 0.007579,
+        "truncated": false
+      },
+      "compressed_llm": {
+        "content": "```json\n{\n  \"security_issues\": [\n    {\n      \"type\": \"SQL Injection\",\n      \"location\": \"/user endpoint\",\n      \"description\": \"Direct concatenation of user input (req.query.id) into SQL query allows SQL injection.\",\n      \"severity\": \"Critical\",\n      \"fix\": \"Use parameterized queries or an ORM.\"\n    },\n    {\n      \"type\": \"Information Exposure\",\n      \"location\": \"Error handler\",\n      \"description\": \"Sending full error stack traces to clients may expose sensitive information.\",\n      \"severity\": \"Medium\",\n      \"fix\": \"Return generic error messages in production.\"\n    }\n  ],\n  \"performance_issues\": [\n    {\n      \"type\": \"Inefficient Loop\",\n      \"location\": \"/search endpoint\",\n      \"description\": \"Looping 1,000,000 times for each request is highly inefficient.\",\n      \"severity\": \"High\",\n      \"fix\": \"Use a more efficient search algorithm or database query.\"\n    }\n  ],\n  \"code_smells\": [\n    {\n      \"type\": \"Hardcoded Database\",\n      \"location\": \"Global scope\",\n      \"description\": \"Mock database (db) is hardcoded and doesn't reflect real usage.\",\n      \"severity\": \"Low\",\n      \"fix\": \"Use a real database connection.\"\n    },\n    {\n      \"type\": \"Unused Variable\",\n      \"location\": \"/user endpoint\",\n      \"description\": \"Query result from db.query() is not used or stored.\",\n      \"severity\": \"Low\",\n      \"fix\": \"Remove or use the query result.\"\n    }\n  ]\n}\n```",
+        "processing_time_ms": 5970.5,
+        "input_tokens": 328,
+        "output_tokens": 347,
+        "total_tokens": 675,
+        "estimated_cost_usd": 0.003095,
+        "truncated": false
+      },
+      "response_similarity": 0.9,
+      "response_evaluation": "good",
+      "compressed_user_prompt": "TASK=analyze INPUT=javascript CHECK=security,perf,code_smells FORMAT=json\n\n```javascript\nconst express = require('express');\nconst app = express();\nconst db = { query: (sql) => sql };\nconst users = {};\n\napp.get('/user', (req, res) => {\n  const id = req.query.id;\n  db.query('SELECT * FROM users WHERE id = ' + id);\n  res.send(users[id]);\n});\n\napp.get('/search', (req, res) => {\n  let results = [];\n  for (let i = 0; i < 1000000; i++) {\n    if (String(i).includes(req.query.q)) {\n      results.push(i);\n    }\n  }\n  res.json(results);\n});\n\napp.use((err, req, res, next) => {\n  res.send(err.stack);\n});\n\napp.listen(3000);\n```",
+      "payload_chars": 529
+    },
+    {
+      "id": "e2e_003",
+      "category": "translation",
+      "language": "es",
+      "original_prompt": "Traduce este documento técnico del español al inglés manteniendo el estilo formal y la terminología especializada.\n\nLa arquitectura de microservicios permite desacoplar componentes independientes desplegables de forma autónoma. Cada servicio expone una API REST y persiste su estado en una base de datos dedicada. La comunicación asíncrona entre servicios se realiza mediante un bus de eventos, lo que mejora la tolerancia a fallos pero introduce complejidad operativa en trazabilidad y consistencia eventual.",
+      "compressed_prompt": "TASK=translate FROM=es TO=en STYLE=formal DOMAIN=technical",
+      "compression_time_ms": 305.38,
+      "compression_ratio": 0.4167,
+      "original_llm": {
+        "content": "The microservices architecture enables the decoupling of independent components that can be deployed autonomously. Each service exposes a REST API and persists its state in a dedicated database. Asynchronous communication between services is handled via an event bus, which improves fault tolerance but introduces operational complexity in traceability and eventual consistency.",
+        "processing_time_ms": 717.56,
+        "input_tokens": 237,
+        "output_tokens": 61,
+        "total_tokens": 298,
+        "estimated_cost_usd": 0.000813,
+        "truncated": false
+      },
+      "compressed_llm": {
+        "content": "The microservices architecture allows decoupling independent components that can be deployed autonomously. Each service exposes a REST API and persists its state in a dedicated database. Asynchronous communication between services is carried out via an event bus, which improves fault tolerance but introduces operational complexity in traceability and eventual consistency.",
+        "processing_time_ms": 804.0,
+        "input_tokens": 234,
+        "output_tokens": 60,
+        "total_tokens": 294,
+        "estimated_cost_usd": 0.000801,
+        "truncated": false
+      },
+      "response_similarity": 0.98,
+      "response_evaluation": "excellent",
+      "compressed_user_prompt": "TASK=translate FROM=es TO=en STYLE=formal DOMAIN=technical\n\nLa arquitectura de microservicios permite desacoplar componentes independientes desplegables de forma autónoma. Cada servicio expone una API REST y persiste su estado en una base de datos dedicada. La comunicación asíncrona entre servicios se realiza mediante un bus de eventos, lo que mejora la tolerancia a fallos pero introduce complejidad operativa en trazabilidad y consistencia eventual.",
+      "payload_chars": 393
+    },
+    {
+      "id": "e2e_004",
+      "category": "summarization",
+      "language": "es",
+      "original_prompt": "Genera un resumen ejecutivo de este informe anual, destacando los puntos clave y las métricas más importantes en formato de lista.\n\nInforme anual 2025 — Resumen operativo\n\nLa compañía cerró el ejercicio con ingresos de 48,2 M€ (+12% interanual) y un margen EBITDA del 18,4%. El churn de clientes enterprise se redujo del 7,1% al 5,6% tras el programa de customer success. Se lanzaron tres productos: Analytics Pro, Data Lake Connector y Compliance Hub. La plantilla creció un 9% (412 empleados). Inversión en I+D: 6,1 M€. Deuda neta/EBITDA: 1,3x. Objetivo 2026: expansión en DACH y certificación ISO 27001.",
+      "compressed_prompt": "TASK=summarize INPUT=annual_report FORMAT=list HIGHLIGHT=key_points,metrics",
+      "compression_time_ms": 343.37,
+      "compression_ratio": 0.4839,
+      "original_llm": {
+        "content": "**Resumen ejecutivo del Informe Anual 2025**\n\n- **Crecimiento financiero**:\n  - Ingresos: **48,2 M€** (+12% vs. 2024).\n  - Margen EBITDA: **18,4%**.\n\n- **Clientes y productos**:\n  - Reducción del *churn* en segmentos *enterprise*: **7,1% → 5,6%** (gracias al programa *Customer Success*).\n  - Lanzamientos: **Analytics Pro**, **Data Lake Connector** y **Compliance Hub**.\n\n- **Recursos humanos e innovación**:\n  - Plantilla: **+9%** (total: **412 empleados**).\n  - Inversión en I+D: **6,1 M€**.\n\n- **Estructura financiera**:\n  - Ratio deuda neta/EBITDA: **1,3x**.\n\n- **Objetivos 2026**:\n  - Expansión en región **DACH** (Alemania, Austria, Suiza).\n  - Obtención de la certificación **ISO 27001**.",
+        "processing_time_ms": 1786.35,
+        "input_tokens": 326,
+        "output_tokens": 246,
+        "total_tokens": 572,
+        "estimated_cost_usd": 0.002334,
+        "truncated": false
+      },
+      "compressed_llm": {
+        "content": "**Resumen del informe anual 2025 (puntos clave y métricas):**\n\n- **Ingresos:** 48,2 M€ (+12% vs. 2024).\n- **Margen EBITDA:** 18,4%.\n- **Churn enterprise:** Reducción del 7,1% al 5,6% (gracias al programa *customer success*).\n- **Productos lanzados:** Analytics Pro, Data Lake Connector, Compliance Hub.\n- **Crecimiento plantilla:** +9% (412 empleados).\n- **Inversión en I+D:** 6,1 M€.\n- **Deuda neta/EBITDA:** Ratio de 1,3x.\n- **Objetivos 2026:** Expansión en región DACH y obtención de certificación ISO 27001.",
+        "processing_time_ms": 3790.15,
+        "input_tokens": 322,
+        "output_tokens": 195,
+        "total_tokens": 517,
+        "estimated_cost_usd": 0.001945,
+        "truncated": false
+      },
+      "response_similarity": 0.95,
+      "response_evaluation": "excellent",
+      "compressed_user_prompt": "TASK=summarize INPUT=annual_report FORMAT=list HIGHLIGHT=key_points,metrics\n\nInforme anual 2025 — Resumen operativo\n\nLa compañía cerró el ejercicio con ingresos de 48,2 M€ (+12% interanual) y un margen EBITDA del 18,4%. El churn de clientes enterprise se redujo del 7,1% al 5,6% tras el programa de customer success. Se lanzaron tres productos: Analytics Pro, Data Lake Connector y Compliance Hub. La plantilla creció un 9% (412 empleados). Inversión en I+D: 6,1 M€. Deuda neta/EBITDA: 1,3x. Objetivo 2026: expansión en DACH y certificación ISO 27001.",
+      "payload_chars": 474
+    }
+  ]
+}

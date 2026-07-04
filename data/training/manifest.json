@@ -1,0 +1,8 @@
+{
+  "total": 83,
+  "train": 73,
+  "valid": 10,
+  "gold": 10,
+  "synthetic": 73,
+  "seed": 42
+}

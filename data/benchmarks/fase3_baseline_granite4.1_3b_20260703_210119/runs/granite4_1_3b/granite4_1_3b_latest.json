@@ -1,0 +1,361 @@
+{
+  "generated_at": "2026-07-03T21:01:07.952086+00:00",
+  "model": "granite4.1:3b",
+  "strategy": "balanced",
+  "include_semantic": true,
+  "think": null,
+  "summary": {
+    "total_prompts": 10,
+    "avg_compression_ratio": 0.4008,
+    "min_compression_ratio": 0.129,
+    "max_compression_ratio": 0.5897,
+    "total_tokens_saved": 145,
+    "avg_format_similarity": 1.0,
+    "avg_semantic_similarity": 0.9,
+    "avg_processing_time_ms": 958.78
+  },
+  "entries": [
+    {
+      "id": "prompt_001",
+      "category": "code_review",
+      "language": "es",
+      "original_prompt": "Analiza cuidadosamente este código Python buscando posibles condiciones de carrera, fugas de memoria y oportunidades de optimización. Devuelve un informe en Markdown organizado por severidad.",
+      "expected_compression": "TASK=review INPUT=python CHECK=race,leak,perf FORMAT=markdown ORDER=severity",
+      "compressed_prompt": "TASK=review INPUT=python CHECK=race,leak,perf FORMAT=markdown ORDER=severity",
+      "original_tokens": 40,
+      "compressed_tokens": 20,
+      "compression_ratio": 0.5,
+      "processing_time_ms": 6099.19,
+      "format_similarity": {
+        "key_recall": 1.0,
+        "value_match": 1.0,
+        "score": 1.0,
+        "missing_keys": [],
+        "extra_keys": [],
+        "expected_fields": {
+          "TASK": "review",
+          "INPUT": "python",
+          "CHECK": "race,leak,perf",
+          "FORMAT": "markdown",
+          "ORDER": "severity"
+        },
+        "actual_fields": {
+          "TASK": "review",
+          "INPUT": "python",
+          "CHECK": "race,leak,perf",
+          "FORMAT": "markdown",
+          "ORDER": "severity"
+        }
+      },
+      "semantic_similarity": 0.9,
+      "semantic_evaluation": "good"
+    },
+    {
+      "id": "prompt_002",
+      "category": "translation",
+      "language": "es",
+      "original_prompt": "Por favor, podrías traducir este documento técnico del español al inglés manteniendo el estilo formal y la terminología especializada?",
+      "expected_compression": "TASK=translate FROM=es TO=en STYLE=formal DOMAIN=technical",
+      "compressed_prompt": "TASK=translate FROM=es TO=en STYLE=formal DOMAIN=technical",
+      "original_tokens": 30,
+      "compressed_tokens": 14,
+      "compression_ratio": 0.5333,
+      "processing_time_ms": 322.43,
+      "format_similarity": {
+        "key_recall": 1.0,
+        "value_match": 1.0,
+        "score": 1.0,
+        "missing_keys": [],
+        "extra_keys": [],
+        "expected_fields": {
+          "TASK": "translate",
+          "FROM": "es",
+          "TO": "en",
+          "STYLE": "formal",
+          "DOMAIN": "technical"
+        },
+        "actual_fields": {
+          "TASK": "translate",
+          "FROM": "es",
+          "TO": "en",
+          "STYLE": "formal",
+          "DOMAIN": "technical"
+        }
+      },
+      "semantic_similarity": 0.9,
+      "semantic_evaluation": "good"
+    },
+    {
+      "id": "prompt_003",
+      "category": "summarization",
+      "language": "es",
+      "original_prompt": "Necesito que generes un resumen ejecutivo de este informe anual de la empresa, destacando los puntos clave y las métricas más importantes en formato de lista.",
+      "expected_compression": "TASK=summarize INPUT=annual_report FORMAT=list HIGHLIGHT=key_points,metrics",
+      "compressed_prompt": "TASK=summarize INPUT=annual_report FORMAT=list HIGHLIGHT=key_points,metrics",
+      "original_tokens": 39,
+      "compressed_tokens": 16,
+      "compression_ratio": 0.5897,
+      "processing_time_ms": 329.52,
+      "format_similarity": {
+        "key_recall": 1.0,
+        "value_match": 1.0,
+        "score": 1.0,
+        "missing_keys": [],
+        "extra_keys": [],
+        "expected_fields": {
+          "TASK": "summarize",
+          "INPUT": "annual_report",
+          "FORMAT": "list",
+          "HIGHLIGHT": "key_points,metrics"
+        },
+        "actual_fields": {
+          "TASK": "summarize",
+          "INPUT": "annual_report",
+          "FORMAT": "list",
+          "HIGHLIGHT": "key_points,metrics"
+        }
+      },
+      "semantic_similarity": 0.9,
+      "semantic_evaluation": "good"
+    },
+    {
+      "id": "prompt_004",
+      "category": "code_review",
+      "language": "en",
+      "original_prompt": "Generate a comprehensive analysis of this JavaScript code, identifying all potential security vulnerabilities, performance bottlenecks, and code smells. Present the findings in a structured JSON format.",
+      "expected_compression": "TASK=analyze INPUT=javascript CHECK=security,perf,code_smells FORMAT=json",
+      "compressed_prompt": "TASK=analyze INPUT=javascript CHECK=security,perf,code_smells FORMAT=json",
+      "original_tokens": 33,
+      "compressed_tokens": 17,
+      "compression_ratio": 0.4848,
+      "processing_time_ms": 340.07,
+      "format_similarity": {
+        "key_recall": 1.0,
+        "value_match": 1.0,
+        "score": 1.0,
+        "missing_keys": [],
+        "extra_keys": [],
+        "expected_fields": {
+          "TASK": "analyze",
+          "INPUT": "javascript",
+          "CHECK": "security,perf,code_smells",
+          "FORMAT": "json"
+        },
+        "actual_fields": {
+          "TASK": "analyze",
+          "INPUT": "javascript",
+          "CHECK": "security,perf,code_smells",
+          "FORMAT": "json"
+        }
+      },
+      "semantic_similarity": 0.9,
+      "semantic_evaluation": "good"
+    },
+    {
+      "id": "prompt_005",
+      "category": "explanation",
+      "language": "es",
+      "original_prompt": "Explica el concepto de Inteligencia Artificial a un niño de 10 años usando analogías sencillas y ejemplos de la vida cotidiana.",
+      "expected_compression": "TASK=explain TOPIC=AI AUDIENCE=child_10 STYLE=simple USE=analogies,examples",
+      "compressed_prompt": "TASK=explain TOPIC=AI AUDIENCE=child_10 STYLE=simple USE=analogies,examples",
+      "original_tokens": 35,
+      "compressed_tokens": 23,
+      "compression_ratio": 0.3429,
+      "processing_time_ms": 408.77,
+      "format_similarity": {
+        "key_recall": 1.0,
+        "value_match": 1.0,
+        "score": 1.0,
+        "missing_keys": [],
+        "extra_keys": [],
+        "expected_fields": {
+          "TASK": "explain",
+          "TOPIC": "ai",
+          "AUDIENCE": "child_10",
+          "STYLE": "simple",
+          "USE": "analogies,examples"
+        },
+        "actual_fields": {
+          "TASK": "explain",
+          "TOPIC": "ai",
+          "AUDIENCE": "child_10",
+          "STYLE": "simple",
+          "USE": "analogies,examples"
+        }
+      },
+      "semantic_similarity": 0.9,
+      "semantic_evaluation": "good"
+    },
+    {
+      "id": "prompt_006",
+      "category": "writing",
+      "language": "en",
+      "original_prompt": "I need you to write a professional email to a potential client about our new AI-powered data analysis service. The email should be concise, highlight the main benefits, and include a call to action.",
+      "expected_compression": "TASK=write TYPE=email TO=client TOPIC=AI_data_service STYLE=professional TONE=concise INCLUDE=benefits,cta",
+      "compressed_prompt": "TASK=write TYPE=email TO=client TOPIC=AI_data_service STYLE=professional TONE=concise INCLUDE=benefits,cta",
+      "original_tokens": 39,
+      "compressed_tokens": 28,
+      "compression_ratio": 0.2821,
+      "processing_time_ms": 464.77,
+      "format_similarity": {
+        "key_recall": 1.0,
+        "value_match": 1.0,
+        "score": 1.0,
+        "missing_keys": [],
+        "extra_keys": [],
+        "expected_fields": {
+          "TASK": "write",
+          "TYPE": "email",
+          "TO": "client",
+          "TOPIC": "ai_data_service",
+          "STYLE": "professional",
+          "TONE": "concise",
+          "INCLUDE": "benefits,cta"
+        },
+        "actual_fields": {
+          "TASK": "write",
+          "TYPE": "email",
+          "TO": "client",
+          "TOPIC": "ai_data_service",
+          "STYLE": "professional",
+          "TONE": "concise",
+          "INCLUDE": "benefits,cta"
+        }
+      },
+      "semantic_similarity": 0.9,
+      "semantic_evaluation": "good"
+    },
+    {
+      "id": "prompt_007",
+      "category": "comparison",
+      "language": "es",
+      "original_prompt": "Comparar estos dos algoritmos de ordenamiento (quicksort y mergesort) en términos de complejidad temporal, complejidad espacial y casos de uso recomendados.",
+      "expected_compression": "TASK=compare ITEMS=quicksort,mergesort CRITERIA=time_complexity,space_complexity,use_cases",
+      "compressed_prompt": "TASK=compare ITEMS=quicksort,mergesort CRITERIA=time_complexity,space_complexity,use_cases",
+      "original_tokens": 40,
+      "compressed_tokens": 25,
+      "compression_ratio": 0.375,
+      "processing_time_ms": 431.71,
+      "format_similarity": {
+        "key_recall": 1.0,
+        "value_match": 1.0,
+        "score": 1.0,
+        "missing_keys": [],
+        "extra_keys": [],
+        "expected_fields": {
+          "TASK": "compare",
+          "ITEMS": "quicksort,mergesort",
+          "CRITERIA": "time_complexity,space_complexity,use_cases"
+        },
+        "actual_fields": {
+          "TASK": "compare",
+          "ITEMS": "quicksort,mergesort",
+          "CRITERIA": "time_complexity,space_complexity,use_cases"
+        }
+      },
+      "semantic_similarity": 0.9,
+      "semantic_evaluation": "good"
+    },
+    {
+      "id": "prompt_008",
+      "category": "planning",
+      "language": "en",
+      "original_prompt": "Create a detailed project plan for developing a mobile application with the following requirements: user authentication, real-time chat, and image sharing capabilities.",
+      "expected_compression": "TASK=create_plan TYPE=project DOMAIN=mobile_app FEATURES=auth,realtime_chat,image_sharing",
+      "compressed_prompt": "TASK=create_plan TYPE=project DOMAIN=mobile_app FEATURES=auth,realtime_chat,image_sharing",
+      "original_tokens": 27,
+      "compressed_tokens": 20,
+      "compression_ratio": 0.2593,
+      "processing_time_ms": 364.34,
+      "format_similarity": {
+        "key_recall": 1.0,
+        "value_match": 1.0,
+        "score": 1.0,
+        "missing_keys": [],
+        "extra_keys": [],
+        "expected_fields": {
+          "TASK": "create_plan",
+          "TYPE": "project",
+          "DOMAIN": "mobile_app",
+          "FEATURES": "auth,realtime_chat,image_sharing"
+        },
+        "actual_fields": {
+          "TASK": "create_plan",
+          "TYPE": "project",
+          "DOMAIN": "mobile_app",
+          "FEATURES": "auth,realtime_chat,image_sharing"
+        }
+      },
+      "semantic_similarity": 0.9,
+      "semantic_evaluation": "good"
+    },
+    {
+      "id": "prompt_009",
+      "category": "legal_review",
+      "language": "es",
+      "original_prompt": "Revisa este contrato legal y señala todas las cláusulas que puedan ser problemáticas para el cliente, prestando especial atención a las condiciones de cancelación y las penalizaciones.",
+      "expected_compression": "TASK=review INPUT=contract FOCUS=problematic_clauses CHECK=cancellation_terms,penalties",
+      "compressed_prompt": "TASK=review INPUT=contract FOCUS=problematic_clauses CHECK=cancellation_terms,penalties",
+      "original_tokens": 41,
+      "compressed_tokens": 20,
+      "compression_ratio": 0.5122,
+      "processing_time_ms": 375.08,
+      "format_similarity": {
+        "key_recall": 1.0,
+        "value_match": 1.0,
+        "score": 1.0,
+        "missing_keys": [],
+        "extra_keys": [],
+        "expected_fields": {
+          "TASK": "review",
+          "INPUT": "contract",
+          "FOCUS": "problematic_clauses",
+          "CHECK": "cancellation_terms,penalties"
+        },
+        "actual_fields": {
+          "TASK": "review",
+          "INPUT": "contract",
+          "FOCUS": "problematic_clauses",
+          "CHECK": "cancellation_terms,penalties"
+        }
+      },
+      "semantic_similarity": 0.9,
+      "semantic_evaluation": "good"
+    },
+    {
+      "id": "prompt_010",
+      "category": "database_design",
+      "language": "en",
+      "original_prompt": "Design a database schema for an e-commerce application that includes users, products, orders, and reviews. Make sure to include proper relationships and indexes for performance.",
+      "expected_compression": "TASK=design SCHEMA=ecommerce ENTITIES=users,products,orders,reviews REQUIRE=relationships,indexes OPTIMIZE=performance",
+      "compressed_prompt": "TASK=design SCHEMA=ecommerce ENTITIES=users,products,orders,reviews REQUIRE=relationships,indexes OPTIMIZE=performance",
+      "original_tokens": 31,
+      "compressed_tokens": 27,
+      "compression_ratio": 0.129,
+      "processing_time_ms": 451.93,
+      "format_similarity": {
+        "key_recall": 1.0,
+        "value_match": 1.0,
+        "score": 1.0,
+        "missing_keys": [],
+        "extra_keys": [],
+        "expected_fields": {
+          "TASK": "design",
+          "SCHEMA": "ecommerce",
+          "ENTITIES": "users,products,orders,reviews",
+          "REQUIRE": "relationships,indexes",
+          "OPTIMIZE": "performance"
+        },
+        "actual_fields": {
+          "TASK": "design",
+          "SCHEMA": "ecommerce",
+          "ENTITIES": "users,products,orders,reviews",
+          "REQUIRE": "relationships,indexes",
+          "OPTIMIZE": "performance"
+        }
+      },
+      "semantic_similarity": 0.9,
+      "semantic_evaluation": "good"
+    }
+  ]
+}

@@ -35,6 +35,8 @@ pip install -r requirements-training.txt
 
 Incluye `mlx-lm` y `mlx` para LoRA sobre `mlx-community/Qwen2.5-3B-Instruct-4bit`.
 
+La configuración LoRA (`rank`, `mask_prompt`, etc.) está en `data/training/lora_config.yaml` y es consumida por `scripts/train_compressor.py` vía `mlx_lm lora -c`.
+
 ---
 
 ## 3. Generar dataset
@@ -163,6 +165,22 @@ data/training/
 data/benchmarks/
   fase3_comparison.md                         # comparativa A/B
 ```
+
+---
+
+## 11. Troubleshooting
+
+### `AttributeError: 'str' object has no attribute '__module__'` al importar mlx-lm
+
+Incompatibilidad entre `mlx-lm` y `transformers` 5.x. Reinstala con el pin del proyecto:
+
+```bash
+pip install 'transformers>=4.43,<5.0' -r requirements-training.txt
+```
+
+### `unrecognized arguments: --lora-rank` o `--val-data`
+
+`mlx_lm` 0.31+ cambió la CLI: el rank LoRA va en `data/training/lora_config.yaml` y `valid.jsonl` se lee automáticamente del directorio `--data`. Actualiza el repo y usa el `train_compressor.py` más reciente.
 
 ---
 
