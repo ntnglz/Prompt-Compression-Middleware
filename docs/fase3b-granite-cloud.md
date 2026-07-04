@@ -1,10 +1,12 @@
 # Fase 3b — Fine-tune Granite en Cloud (Enfoque A conservador)
 
+> **Estado: CERRADA** (2026-07-04) — Pipeline cloud validado; modelo `pcm-granite` publicado en Ollama. Ver [Cierre y resultados](#cierre-y-resultados-2026-07-04).
+
 Guía paso a paso para quien nunca ha usado RunPod ni fine-tuning en cloud.
 
-**Objetivo:** entrenar `granite4.1:3b` con ~400 pares (plantillas v2) y publicar `pcm-granite` en Ollama.
+**Objetivo:** entrenar granite con ~400 pares (plantillas v2) y publicar `pcm-granite` en Ollama.
 
-**Presupuesto:** ~2 USD por experimento (RTX 4090 spot, ~30 min).
+**Presupuesto:** ~2 USD por experimento (RTX 4090 spot, ~30 min). **Coste real:** ~0.18 USD.
 
 ---
 
@@ -107,10 +109,15 @@ Salida esperada: `data/training/v2/checkpoints/granite-merged/` (~5 GB).
 
 ### 5.3 Crear modelo Ollama
 
+Ollama **no importa safetensors** con arquitectura `GraniteForCausalLM`. El script convierte primero a GGUF (`pcm-granite-f16.gguf`, ~4.7 GB) y luego ejecuta `ollama create`.
+
 ```bash
 chmod +x scripts/export_granite_ollama.sh
 ./scripts/export_granite_ollama.sh
+ollama list | grep pcm-granite   # esperado: ~5.1 GB
 ```
+
+Requisito: `convert_hf_to_gguf.py` de llama.cpp (Homebrew: `brew install llama.cpp`) y `pip install gguf`.
 
 ---
 
@@ -135,6 +142,94 @@ Informe: `data/benchmarks/fase3b_validation.md`
 | Mejora vs baseline | Bonus (no bloqueante) |
 
 Si pasa pero el ratio apenas mejora → escalar al **Enfoque B** (más datos, corpus real).
+
+---
+
+## Cierre y resultados (2026-07-04)
+
+### Veredicto: **GO — experimento PCM validado**
+
+El objetivo del Enfoque A era demostrar que el flujo RunPod → merge → Ollama → eval funciona de punta a punta. **E2E Mistral confirma que el fine-tune es usable en producción.**
+
+| Criterio | Resultado | Estado |
+|----------|-----------|--------|
+| Leakage train/eval | 0 (367 train + 35 valid, `check_dataset_leakage.py`) | ✅ |
+| Pipeline cloud | RunPod → adapter → merge → GGUF → `pcm-granite` | ✅ |
+| Holdout curated formato | **69.12%** (umbral ≥ 70%) | ⚠️ −0.88 pp |
+| Mejora vs baseline glossary | Formato 5.67% → **69.12%**; semántica 66.5% → **88.0%** | ✅ |
+| **E2E Mistral** | **94.50%** similitud, **49.54%** ratio | ✅ |
+
+El umbral de formato holdout queda justo del 70%, pero E2E ≥90% desbloquea la integración. **No se requiere repetir RunPod** para usar `pcm-granite` en el proxy.
+
+### Entrenamiento (RunPod)
+
+| Parámetro | Valor |
+|-----------|-------|
+| GPU | RTX 3090 On-Demand ($0.46/h) |
+| Duración | ~25 min |
+| Coste cloud | **~$0.18** |
+| Base HF | `ibm-granite/granite-3.3-2b-instruct` |
+| Dataset | 367 train / 35 valid (plantillas v2, glossary) |
+| Epochs / steps | 2 / 92 |
+| Loss final | ~0.135 → ~0.017 |
+| Adapter | `data/training/v2/checkpoints/granite-lora/` |
+
+### Validación (Mac, 2026-07-04)
+
+Benchmark A/B/C con `scripts/validate_granite_v2.py --semantic`. Informe: `data/benchmarks/fase3b_validation.md`.
+
+**holdout_curated** (20 prompts):
+
+| Config | Ratio | Formato | Semántica |
+|--------|-------|---------|-----------|
+| baseline_full (`granite4.1:3b`) | 19.43% | 46.58% | 93.50% |
+| baseline_glossary | 29.84% | 5.67% | 66.50% |
+| **finetuned_glossary (`pcm-granite`)** | **26.51%** | **69.12%** | **88.00%** |
+
+**holdout_synthetic** (30 prompts): formato **51.31%**, semántica **86.33%**, ratio **22.46%**.
+
+**Nota metodológica:** el baseline compara contra `granite4.1:3b` (Ollama) mientras el fine-tune partió de `granite-3.3-2b-instruct` (HF). Documentar este delta al interpretar ratios.
+
+**E2E Mistral** (`validate_granite_v2.py --e2e`, 4 prompts con payload):
+
+| Config | Similitud | Ratio E2E |
+|--------|-----------|-----------|
+| baseline_full | 93.25% | 47.13% |
+| baseline_glossary | 96.25% | 27.96% |
+| **pcm-granite** | **94.50%** | **49.54%** |
+
+### Integración
+
+```bash
+# .env
+OLLAMA_MODEL=pcm-granite
+
+python run.py --proxy
+```
+
+### Artefactos finales
+
+```
+data/training/v2/checkpoints/
+  granite-lora/          # adapter RunPod (gitignored)
+  granite-merged/        # pesos fusionados HF (~5 GB, gitignored)
+  pcm-granite-f16.gguf   # export GGUF (~4.7 GB, gitignored)
+  Modelfile              # FROM ./pcm-granite-f16.gguf
+
+Ollama: pcm-granite:latest (~5.1 GB)
+```
+
+### Próximos pasos (post-E2E)
+
+| Fase | Estado | Acción |
+|------|--------|--------|
+| Pipeline cloud + Ollama | ✅ | — |
+| E2E Mistral | ✅ 94.50% | — |
+| **Integración proxy** | ✅ | `OLLAMA_MODEL=pcm-granite` verificado |
+| Enfoque B | Opcional | Pre-producción a largo plazo (dataset 1k–1.5k pares) |
+| **COE** | Horizonte | Compresión de contextos completos, BD semántica del chat |
+
+**Cierre del experimento PCM:** con E2E validado, el middleware de compresión de *instrucciones* puede darse por demostrado. El siguiente salto ambicioso es **Context Optimization Engine** (ver `Context Optimization Engine (COE).md`).
 
 ---
 
@@ -194,6 +289,14 @@ Registro operativo del primer experimento Enfoque A. Actualizar si cambian versi
 | **0 leakage** | `check_dataset_leakage.py` en CI evita eval circular. |
 | **Glossary en train** | JSONL usa `PCM_SYSTEM_GLOSSARY` (sin few-shots) para eval justa post fine-tune. |
 
+### Exportación Ollama
+
+| Lección | Detalle |
+|---------|---------|
+| **Safetensors no soportado** | `ollama create` desde `granite-merged/` falla con `unsupported architecture "GraniteForCausalLM"`. |
+| **Ruta correcta** | `convert_hf_to_gguf.py` (llama.cpp) → `pcm-granite-f16.gguf` → Modelfile → `ollama create`. |
+| **Automatizado** | `scripts/export_granite_ollama.sh` incluye conversión GGUF + smoke test vía API. |
+
 ### Comandos de referencia (descarga HF)
 
 ```bash
@@ -221,6 +324,7 @@ rm -f ~/.cache/huggingface/hub/.locks/models--ibm-granite--granite-3.3-2b-instru
 | Descarga HF al 1% horas | Desactivar Xet (`HF_HUB_ENABLE_HF_TRANSFER=0`, `HF_HUB_DISABLE_XET=1`) |
 | `Still waiting to acquire lock` | Matar procesos HF duplicados; borrar `*.lock` en cache HF |
 | OOM en GPU | Reducir batch size en notebook; usar QLoRA 4-bit |
+| `unsupported architecture GraniteForCausalLM` | Convertir a GGUF; ver `export_granite_ollama.sh` |
 | `pcm-granite` no existe en Ollama | Completar merge → `export_granite_ollama.sh` |
 | Formato PCM bajo en holdout | Normal en A; validar pipeline antes de escalar dataset |
 

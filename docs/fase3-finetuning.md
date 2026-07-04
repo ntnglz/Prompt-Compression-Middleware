@@ -189,3 +189,10 @@ pip install 'transformers>=4.43,<5.0' -r requirements-training.txt
 - Spec: `docs/superpowers/specs/2026-07-03-fase3-finetuning-design.md`
 - Plan de implementación: `docs/superpowers/plans/2026-07-03-fase3-finetuning.md`
 - Glosario PCM: `src/pcm/compressor.py` (`COMPRESSION_SYSTEM_PROMPT`)
+
+### Fase 3b (cloud, cerrada 2026-07-04)
+
+Alternativa cloud con Unsloth + RunPod sobre granite HF. Resultado: modelo `pcm-granite` en Ollama; pipeline validado; formato curated **69.12%** con glossary.
+
+- Guía: `docs/fase3b-granite-cloud.md`
+- Benchmark: `data/benchmarks/fase3b_validation.md`

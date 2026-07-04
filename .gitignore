@@ -80,6 +80,10 @@ data/training/*.jsonl
 data/training/v2/*.jsonl
 !data/training/v2/.gitkeep
 data/training/v2/checkpoints/
+# Resultados E2E Fase 3b (gitignored — usar fase3b_validation.md)
+data/e2e/fase3b_*/
+# Runs holdout duplicados (conservar solo informe + results JSON)
+data/benchmarks/fase3b_*_holdout_*/
 
 # Artefactos locales RunPod / export (no versionar)
 workspace/

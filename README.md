@@ -1,17 +1,20 @@
 # Prompt Compression Middleware (PCM)
 
-Middleware que comprime instrucciones en lenguaje natural a formato **PCM** (`TASK=review INPUT=python...`) antes de enviarlas a un LLM destino, preservando payloads (código, documentos) sin modificar.
+Middleware que comprime **instrucciones** en lenguaje natural a formato **PCM** compacto (`TASK=review INPUT=python...`) antes de enviarlas a un LLM destino, preservando payloads (código, documentos) sin modificar.
 
 ```
 Cliente → PCM Proxy (:8090) → Mistral / OpenAI-compatible API
               ↓
-         Ollama (compresor local)
+         Ollama (compresor local: granite4.1:3b | pcm-granite)
 ```
+
+> **Estado del proyecto (julio 2026):** experimento PCM **cerrado con éxito**. Fine-tune `pcm-granite` validado E2E (94.50% similitud Mistral). Ver [conclusiones del experimento](docs/experimento-pcm-conclusiones.md).
 
 ## Requisitos
 
-- [Docker](https://docs.docker.com/get-docker/) y Docker Compose
+- [Docker](https://docs.docker.com/get-docker/) y Docker Compose, **o** Python 3.11+ + [Ollama](https://ollama.com)
 - Clave API de [Mistral](https://console.mistral.ai/) (u otro proveedor compatible)
+- Compresor en Ollama: `granite4.1:3b` (baseline) o `pcm-granite` (fine-tuned, recomendado)
 
 ## Inicio rápido con Docker
 
@@ -20,14 +23,15 @@ git clone https://github.com/ntnglz/Prompt-Compression-Middleware.git
 cd Prompt-Compression-Middleware
 
 cp .env.example .env
-# Edita .env y añade MISTRAL_API_KEY=...
+# Edita .env: MISTRAL_API_KEY=...
+# Opcional fine-tuned: OLLAMA_MODEL=pcm-granite
 
 docker compose up --build
 ```
 
-La primera vez descargará el modelo `granite4.1:3b` en Ollama (puede tardar).
+La primera vez descargará el modelo compresor en Ollama (puede tardar).
 
-**Proxy listo en:** `http://localhost:8090/v1/chat/completions`
+**Proxy:** `http://localhost:8090/v1/chat/completions`
 
 ### Health check
 
@@ -35,10 +39,10 @@ La primera vez descargará el modelo `granite4.1:3b` en Ollama (puede tardar).
 curl http://localhost:8090/health
 ```
 
-### Ejemplo
+### Ejemplo con compresión
 
 ```bash
-# Prompt largo → se comprime
+# Prompt largo → se comprime (ver headers X-PCM-*)
 curl -X POST http://localhost:8090/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
@@ -63,48 +67,43 @@ curl -X POST http://localhost:8090/v1/chat/completions \
 | `X-PCM-Compression-Ratio` | Ratio de ahorro (0 si omitido) |
 | `X-PCM-Tokens-Saved` | Tokens ahorrados en input |
 | `X-PCM-Compression-Time-Ms` | Tiempo de compresión (Ollama) |
+| `X-PCM-Upstream-Provider` | Proveedor destino (mistral, openai, …) |
+| `X-PCM-Upstream-Model` | Modelo destino usado |
 
-Omitir compresión en una petición: `x-pcm-disable: true`
+Omitir compresión: `x-pcm-disable: true`
+
+## Modelos compresor
+
+| Modelo Ollama | Origen | Cuándo usar |
+|---------------|--------|-------------|
+| `granite4.1:3b` | Hub Ollama (default) | Baseline, sin fine-tune |
+| **`pcm-granite`** | Fase 3b cloud (RunPod) | **Recomendado** — E2E 94.50% |
+| `pcm-compressor` | Fase 3a MLX (Mac) | Experimental, solo Apple Silicon |
+
+```bash
+# Baseline
+ollama pull granite4.1:3b
+
+# Fine-tuned (tras export_granite_ollama.sh — ver docs/fase3b-granite-cloud.md)
+ollama list | grep pcm-granite
+```
+
+En `.env`:
+
+```bash
+OLLAMA_MODEL=pcm-granite
+```
 
 ## Multi-upstream
 
-El proxy soporta varios proveedores OpenAI-compatible:
+| Proveedor | Variable API key | Modelo por defecto |
+|-----------|------------------|-------------------|
+| `mistral` | `MISTRAL_API_KEY` | `mistral-medium-3.5` |
+| `openai` | `OPENAI_API_KEY` | `gpt-4o-mini` |
+| `openrouter` | `OPENROUTER_API_KEY` | `openai/gpt-4o-mini` |
+| `custom` | `PCM_UPSTREAM_API_KEY` | `PCM_UPSTREAM_MODEL` |
 
-| Proveedor | Variable API key | URL por defecto | Modelo por defecto |
-|-----------|------------------|-----------------|-------------------|
-| `mistral` | `MISTRAL_API_KEY` | `https://api.mistral.ai/v1` | `mistral-medium-3.5` |
-| `openai` | `OPENAI_API_KEY` | `https://api.openai.com/v1` | `gpt-4o-mini` |
-| `openrouter` | `OPENROUTER_API_KEY` | `https://openrouter.ai/api/v1` | `openai/gpt-4o-mini` |
-| `custom` | `PCM_UPSTREAM_API_KEY` | `PCM_UPSTREAM_URL` | `PCM_UPSTREAM_MODEL` |
-
-### Selección de proveedor
-
-Prioridad:
-1. Header `x-pcm-provider: openai` (por petición)
-2. Auto-detección por modelo (`gpt-*` → OpenAI, `mistral-*` → Mistral)
-3. `PCM_UPSTREAM_PROVIDER` en `.env` (por defecto: `mistral`)
-
-```bash
-# Mistral (por defecto)
-curl -X POST http://localhost:8090/v1/chat/completions \
-  -H "Content-Type: application/json" \
-  -d '{"messages":[{"role":"user","content":"Hola"}]}'
-
-# OpenAI explícito
-curl -X POST http://localhost:8090/v1/chat/completions \
-  -H "Content-Type: application/json" \
-  -H "x-pcm-provider: openai" \
-  -d '{"model":"gpt-4o-mini","messages":[{"role":"user","content":"Hola"}]}'
-
-# Auto-ruta a OpenAI por nombre de modelo
-curl -X POST http://localhost:8090/v1/chat/completions \
-  -H "Content-Type: application/json" \
-  -d '{"model":"gpt-4o-mini","messages":[{"role":"user","content":"Hola"}]}'
-```
-
-Headers extra en respuesta: `X-PCM-Upstream-Provider`, `X-PCM-Upstream-Model`
-
-`reasoning_effort` solo se envía a Mistral (no a OpenAI).
+Selección: header `x-pcm-provider` → auto-detección por nombre de modelo → `PCM_UPSTREAM_PROVIDER` en `.env`.
 
 ## Desarrollo local (sin Docker)
 
@@ -113,11 +112,11 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 
-# Ollama en el host con granite4.1:3b
-ollama pull granite4.1:3b
+ollama pull granite4.1:3b   # o usar pcm-granite si ya exportado
 
 cp .env.example .env
 # MISTRAL_API_KEY=...
+# OLLAMA_MODEL=pcm-granite
 
 python run.py --proxy          # Proxy → :8090
 python run.py --http           # API REST → :8080
@@ -134,6 +133,7 @@ python run.py --stdio          # MCP stdio
 | `python run.py --mcp-http` | 8001 | Servidor MCP |
 | `python run.py --benchmark` | — | Benchmark compresor |
 | `scripts/e2e_benchmark.py` | — | Benchmark E2E con Mistral API |
+| `scripts/validate_granite_v2.py` | — | Validación A/B/C post fine-tune |
 
 ## Configuración (`.env`)
 
@@ -141,31 +141,22 @@ python run.py --stdio          # MCP stdio
 |----------|---------|-------------|
 | `MISTRAL_API_KEY` | — | Clave Mistral |
 | `OPENAI_API_KEY` | — | Clave OpenAI |
-| `OPENROUTER_API_KEY` | — | Clave OpenRouter (opcional) |
 | `PCM_UPSTREAM_PROVIDER` | `mistral` | Proveedor por defecto |
-| `OLLAMA_MODEL` | `granite4.1:3b` | Modelo compresor local |
-| `OLLAMA_HOST` | `http://localhost:11434` | URL Ollama (`http://ollama:11434` en Docker) |
+| `OLLAMA_MODEL` | `granite4.1:3b` | Modelo compresor (`pcm-granite` recomendado) |
+| `OLLAMA_HOST` | `http://localhost:11434` | URL Ollama |
 | `PCM_PROXY_PORT` | `8090` | Puerto del proxy |
-| `PCM_UPSTREAM_MODEL` | — | Modelo destino (vacío = default del proveedor) |
-| `PCM_REASONING_EFFORT` | `none` | Solo Mistral: `none` o `high` |
 | `PCM_MIN_INSTRUCTION_TOKENS` | `12` | Umbral mínimo para comprimir |
+| `PCM_REASONING_EFFORT` | `none` | Solo Mistral: `none` o `high` |
 
 ## OpenAI SDK (Python)
 
 ```python
 from openai import OpenAI
 
-# Mistral vía proxy
 client = OpenAI(
     base_url="http://localhost:8090/v1",
     api_key="dummy",
     default_headers={"x-pcm-provider": "mistral"},
-)
-
-# OpenAI vía proxy (auto-ruta si model=gpt-4o-mini)
-client_openai = OpenAI(
-    base_url="http://localhost:8090/v1",
-    api_key="dummy",
 )
 
 response = client.chat.completions.create(
@@ -175,31 +166,32 @@ response = client.chat.completions.create(
 print(response.choices[0].message.content)
 ```
 
-## Fase 3 — Fine-tuning local (Mac Apple Silicon)
+## Fine-tuning y experimento PCM
 
-Ver [docs/fase3-finetuning.md](docs/fase3-finetuning.md).
+El experimento de compresión de instrucciones está **cerrado** (julio 2026).
+
+| Documento | Contenido |
+|-----------|-----------|
+| [**Conclusiones del experimento**](docs/experimento-pcm-conclusiones.md) | Resultados, lecciones, cómo repetir |
+| [Fase 3b — Granite cloud](docs/fase3b-granite-cloud.md) | RunPod, `pcm-granite`, guía operativa |
+| [Fase 3 — MLX Mac](docs/fase3-finetuning.md) | `pcm-compressor` local |
+| [Benchmark 3b](data/benchmarks/fase3b_validation.md) | Métricas finales |
+
+**Validación rápida:**
+
+```bash
+python scripts/validate_granite_v2.py --semantic --e2e   # requiere Ollama + MISTRAL_API_KEY
+python scripts/check_dataset_leakage.py                  # CI: 0 leakage
+./scripts/ci-local.sh                                    # tests sin Ollama
+```
+
+**Próximo horizonte:** [Context Optimization Engine (COE)](Context%20Optimization%20Engine%20(COE).md) — compresión de contextos completos y memoria semántica del chat.
 
 ## Tests
 
-### CI local (rápido, sin Ollama)
-
 ```bash
-./scripts/ci-local.sh
-# o
-python run.py --test-fast
-```
-
-### CI local completo (requiere Ollama)
-
-```bash
-./scripts/ci-local-full.sh
-# o
-python run.py --test
-```
-
-### Tests concretos
-
-```bash
+./scripts/ci-local.sh              # rápido, sin Ollama
+./scripts/ci-local-full.sh         # completo, requiere Ollama
 pytest tests/test_compression_policy.py tests/test_proxy.py -q
 ```
 
@@ -207,17 +199,38 @@ pytest tests/test_compression_policy.py tests/test_proxy.py -q
 
 ```
 src/pcm/
-  compressor.py      # Compresor Ollama → PCM
-  proxy.py           # Proxy HTTP
-  compression_policy.py  # Umbral mínimo / ahorro neto
-  mcp_server.py      # Servidor MCP
+  compressor.py           # Compresor Ollama → PCM
+  compression_prompts.py  # GLOSSARY vs FULL system prompts
+  proxy.py                # Proxy HTTP multi-upstream
+  compression_policy.py   # Umbral mínimo / ahorro neto
+  mcp_server.py           # Servidor MCP
+  training/dataset.py     # Pipeline dataset fine-tuning
 scripts/
-  benchmark.py       # Benchmark compresor
-  e2e_benchmark.py   # Benchmark E2E Mistral
+  validate_granite_v2.py  # Benchmark post fine-tune 3b
+  export_granite_ollama.sh
+  build_dataset_v2.py
+  check_dataset_leakage.py
 data/
-  e2e_prompts.json   # Prompts E2E con payload
+  eval/                   # Holdouts congelados (nunca en train)
+  e2e_prompts.json        # Prompts E2E con payload
+  benchmarks/             # Informes de validación
+docs/
+  experimento-pcm-conclusiones.md
+  fase3b-granite-cloud.md
 ```
+
+## Roadmap
+
+| Fase | Estado |
+|------|--------|
+| 1 Prototipo (proxy + compresor) | ✅ |
+| 2 Especialización (system prompt) | ✅ |
+| 3a Fine-tune MLX (`pcm-compressor`) | ✅ |
+| 3b Fine-tune cloud (`pcm-granite`) | ✅ |
+| 3b-B Dataset ampliado (pre-producción) | Opcional |
+| COE (contextos completos) | Planificado |
+| 3 RL / 4 LLM IR | Investigación |
 
 ## Licencia
 
-Prototipo de investigación — Fase 1/2 completadas.
+Prototipo de investigación — uso bajo responsabilidad del operador.

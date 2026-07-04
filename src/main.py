@@ -309,7 +309,10 @@ def run_proxy_server(port: int = DEFAULT_PROXY_PORT):
         }
 
     logger.info(f"Iniciando PCM Proxy en http://localhost:{port}")
-    logger.info(f"Upstream: {proxy.config.upstream_base_url}")
+    logger.info(
+        f"Upstream: provider={proxy.config.default_provider} "
+        f"model={proxy.config.default_model or '(default del proveedor)'}"
+    )
     logger.info(f"Endpoint: http://localhost:{port}/v1/chat/completions")
 
     uvicorn.run(

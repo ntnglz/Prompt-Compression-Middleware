@@ -1,39 +1,50 @@
 # Benchmarks PCM
 
-Resultados de comparación de modelos compresores.
+Resultados de comparación de modelos compresores y validación post fine-tuning.
+
+## Informes principales
+
+| Archivo | Descripción |
+|---------|-------------|
+| [fase3b_validation.md](fase3b_validation.md) | **Informe final** — holdout + E2E Mistral (3b) |
+| [fase3_comparison.md](fase3_comparison.md) | Comparativa 3a MLX (`pcm-compressor` vs granite) |
+| [fase3_validation.md](fase3_validation.md) | Validación 3a |
 
 ## Estructura
 
 ```
 data/benchmarks/
-├── index.json              # Índice de todas las ejecuciones
-├── leaderboard.md          # Ranking comparativo (auto-generado)
-└── runs/
-    ├── qwen3_4b/
-    │   ├── qwen3_4b_YYYYMMDD_HHMMSS.json
-    │   ├── qwen3_4b_YYYYMMDD_HHMMSS.md
-    │   ├── qwen3_4b_latest.json    # última ejecución de este modelo
-    │   └── qwen3_4b_latest.md
-    ├── qwen3_1.7b/
-    └── gemma3_4b/
+├── fase3b_validation.md          # Resumen ejecutivo Fase 3b
+├── fase3b_results_*.json         # Resultados agregados JSON
+├── fase3b_*_holdout_*/           # Runs detallados por config/eval set
+├── index.json                    # Índice (benchmarks genéricos)
+└── runs/                         # Benchmarks por modelo (gitignored)
 ```
 
 ## Comandos
 
 ```bash
-# Ejecutar benchmark (guarda automáticamente en runs/{modelo}/)
-python3 scripts/benchmark.py --model granite4.1:3b --semantic -q
+# Benchmark compresor genérico
+python scripts/benchmark.py --model granite4.1:3b --semantic -q
+python scripts/benchmark.py --model pcm-granite --semantic -q
 
-# Reconstruir índice desde archivos existentes
-python3 scripts/benchmark.py --rebuild-index
+# Validación completa Fase 3b (holdout + E2E)
+python scripts/validate_granite_v2.py --semantic --e2e
+
+# Comparativa 3a MLX
+python scripts/compare_finetune.py --semantic
+
+# E2E standalone
+python scripts/e2e_benchmark.py
 ```
 
-## Ronda de modelos sugerida
+## Resultados Fase 3b (referencia)
 
-```bash
-for model in qwen3:4b qwen3:1.7b gemma3:4b granite4.1:3b; do
-  python3 scripts/benchmark.py --model "$model" --semantic -q
-done
-```
+| Métrica | pcm-granite |
+|---------|-------------|
+| E2E similitud Mistral | **94.50%** |
+| E2E ratio compresión | **49.54%** |
+| Holdout formato (glossary) | 69.12% |
+| Leakage train/eval | 0 |
 
-Tras cada ejecución, consulta `leaderboard.md` para comparar.
+Ver [docs/experimento-pcm-conclusiones.md](../../docs/experimento-pcm-conclusiones.md).

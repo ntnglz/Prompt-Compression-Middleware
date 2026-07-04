@@ -1,0 +1,88 @@
+{
+  "eval": {
+    "holdout_curated": {
+      "baseline_full": {
+        "count": 20,
+        "avg_ratio": 0.1968,
+        "avg_format": 0.4192,
+        "avg_semantic": null
+      },
+      "baseline_glossary": {
+        "count": 20,
+        "avg_ratio": 0.2549,
+        "avg_format": 0.04,
+        "avg_semantic": null
+      },
+      "finetuned_glossary": {
+        "count": 20,
+        "avg_ratio": 0.2701,
+        "avg_format": 0.6871,
+        "avg_semantic": null
+      }
+    },
+    "holdout_synthetic": {
+      "baseline_full": {
+        "count": 30,
+        "avg_ratio": 0.1396,
+        "avg_format": 0.3114,
+        "avg_semantic": null
+      },
+      "baseline_glossary": {
+        "count": 30,
+        "avg_ratio": 0.0945,
+        "avg_format": 0.0033,
+        "avg_semantic": null
+      },
+      "finetuned_glossary": {
+        "count": 30,
+        "avg_ratio": 0.2188,
+        "avg_format": 0.4756,
+        "avg_semantic": null
+      }
+    }
+  },
+  "e2e": {
+    "baseline_full": {
+      "total_prompts": 4,
+      "avg_compression_ratio": 0.4713,
+      "avg_compression_time_ms": 569.46,
+      "avg_original_llm_time_ms": 22856.57,
+      "avg_compressed_llm_time_ms": 29826.42,
+      "avg_response_similarity": 0.9325,
+      "total_original_input_tokens": 1233,
+      "total_compressed_input_tokens": 1207,
+      "input_tokens_saved": 26,
+      "total_cost_original_usd": 0.0685,
+      "total_cost_compressed_usd": 0.0911,
+      "total_pipeline_time_ms": 213009.8
+    },
+    "baseline_glossary": {
+      "total_prompts": 4,
+      "avg_compression_ratio": 0.2796,
+      "avg_compression_time_ms": 446.52,
+      "avg_original_llm_time_ms": 23650.55,
+      "avg_compressed_llm_time_ms": 15883.64,
+      "avg_response_similarity": 0.9625,
+      "total_original_input_tokens": 1233,
+      "total_compressed_input_tokens": 1219,
+      "input_tokens_saved": 14,
+      "total_cost_original_usd": 0.0598,
+      "total_cost_compressed_usd": 0.0543,
+      "total_pipeline_time_ms": 159922.87
+    },
+    "finetuned_glossary": {
+      "total_prompts": 4,
+      "avg_compression_ratio": 0.4954,
+      "avg_compression_time_ms": 865.9,
+      "avg_original_llm_time_ms": 39982.78,
+      "avg_compressed_llm_time_ms": 31315.12,
+      "avg_response_similarity": 0.945,
+      "total_original_input_tokens": 1233,
+      "total_compressed_input_tokens": 1204,
+      "input_tokens_saved": 29,
+      "total_cost_original_usd": 0.0857,
+      "total_cost_compressed_usd": 0.0736,
+      "total_pipeline_time_ms": 288655.2
+    }
+  }
+}
