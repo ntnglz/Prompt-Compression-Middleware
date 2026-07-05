@@ -1,0 +1,20 @@
+[
+  {
+    "id": "normal_en",
+    "output_style": "normal",
+    "response_lang": "en",
+    "expected": "RESPONSE:\n- Language: en\n- Answer clearly using only the provided context"
+  },
+  {
+    "id": "normal_es",
+    "output_style": "normal",
+    "response_lang": "es",
+    "expected": "RESPONSE:\n- Language: es\n- Answer clearly using only the provided context"
+  },
+  {
+    "id": "concise_en",
+    "output_style": "concise",
+    "response_lang": "en",
+    "expected": "RESPONSE:\n- Language: en\n- Answer only what was asked\n- No greeting, politeness, hedging, or filler\n- Do not restate or recap the question\n- Do not describe your process unless asked\n- Use the shortest form that preserves required facts (lists over paragraphs)\n- If uncertain, one line stating what is missing; no speculation"
+  }
+]
