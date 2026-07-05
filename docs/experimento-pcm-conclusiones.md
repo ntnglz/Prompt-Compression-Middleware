@@ -56,15 +56,27 @@ Fuente: `data/benchmarks/fase3b_validation.md` (2026-07-04).
 
 ### 3.4 Output directives — `output_style=concise` (2026-07-05)
 
-Tres brazos E2E (`mistral-medium-3.5`, `reasoning=none`). Fuente: [data/benchmarks/output_directives_e2e.md](../data/benchmarks/output_directives_e2e.md).
+Tres brazos E2E (`mistral-medium-3.5`, `reasoning=none`, compresor **`pcm-granite`**). Fuente: [data/benchmarks/output_directives_e2e.md](../data/benchmarks/output_directives_e2e.md).
 
-| Brazo | Coste total (4 prompts) |
-|-------|-------------------------|
-| Baseline (NL) | $0.0157 |
-| PCM (`normal`) | $0.0129 (−18%) |
-| **PCM + concise** | **$0.0069 (−56%)** |
+**Corpus corto (4 prompts):**
 
-Similitud PCM normal vs baseline: **94.50%**. Ahorro output concise vs PCM: **42.6%**.
+| Brazo | Coste total |
+|-------|-------------|
+| Baseline (NL) | $0.0204 |
+| PCM (`normal`) | $0.0092 (−55%) |
+| **PCM + concise** | **$0.0074 (−64%)** |
+
+Similitud PCM normal vs baseline: **93.25%**. Ahorro output concise vs PCM: **26.4%**.
+
+**Corpus extenso (8 prompts, transcripts COE anonimizados):**
+
+| Brazo | Coste total |
+|-------|-------------|
+| Baseline (NL) | $0.0444 |
+| PCM (`normal`) | $0.0352 (−21%) |
+| **PCM + concise** | **$0.0132 (−70%)** |
+
+Similitud: **90.62%**. Ahorro output concise vs PCM: **56.7%**.
 
 **Coste cloud RunPod:** ~$0.18 (RTX 3090, ~25 min).
 

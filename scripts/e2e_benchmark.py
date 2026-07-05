@@ -4,12 +4,13 @@ Benchmark E2E: prompt natural → compresión PCM → Mistral → comparación d
 
 Uso:
     python scripts/e2e_benchmark.py --limit 1 -q
-    python scripts/e2e_benchmark.py -q
-    python scripts/e2e_benchmark.py --prompts data/example_prompts.json -q
+    python scripts/e2e_benchmark.py --compressor-model pcm-granite --reasoning-effort none -q
+    python scripts/e2e_benchmark.py --prompts data/e2e_prompts_extensive.json -q
 """
 
 import argparse
 import logging
+import os
 import sys
 from pathlib import Path
 
@@ -42,8 +43,14 @@ def main() -> int:
     )
     parser.add_argument(
         "--compressor-model",
-        default="granite4.1:3b",
-        help="Modelo Ollama para compresión",
+        default=os.getenv("OLLAMA_MODEL", "granite4.1:3b"),
+        help="Modelo Ollama para compresión (default: OLLAMA_MODEL o granite4.1:3b)",
+    )
+    parser.add_argument(
+        "--glossary-only",
+        action="store_true",
+        default=None,
+        help="PCM_SYSTEM_GLOSSARY sin few-shots (auto si modelo pcm-*)",
     )
     parser.add_argument(
         "--target-model",
@@ -98,12 +105,19 @@ def main() -> int:
         print(f"API OK — modelo={args.target_model}, respuesta={result.content[:80]!r}")
         return 0
 
+    glossary_only = args.glossary_only
+    if glossary_only is None:
+        glossary_only = args.compressor_model.startswith("pcm-")
+
     compressor = PromptCompressor(
-        config=CompressorConfig(model=args.compressor_model)
+        config=CompressorConfig(
+            model=args.compressor_model,
+            glossary_only=glossary_only,
+        )
     )
 
     print(f"Ejecutando benchmark E2E ({args.prompts.name})...")
-    print(f"  Compresor: {args.compressor_model}")
+    print(f"  Compresor: {args.compressor_model} (glossary_only={glossary_only})")
     print(f"  Mistral:   {args.target_model} (reasoning={args.reasoning_effort})")
     if args.limit:
         print(f"  Límite:    {args.limit} prompts")

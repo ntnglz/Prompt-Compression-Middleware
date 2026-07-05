@@ -1,0 +1,70 @@
+[
+  {
+    "id": "ext_001_ci_pytest_triage",
+    "category": "dev_agent",
+    "language": "en",
+    "source_transcript": "synthetic/dev_pytest_failure_session_v1 + cursor_dev pattern",
+    "instruction": "Our CI pipeline for ExampleService just failed on the main branch and I need help triaging before we merge. Read the pytest output below carefully, count how many tests failed and in which areas, group failures by root cause rather than file order, and tell me what to fix first based on user impact and how isolated each fix is. Prioritize authentication problems (401 responses or missing token fields in JSON) before billing or rounding errors, and only then consider flaky or environmental failures. For each failure, give the likely component, a one-line hypothesis, and whether it looks like a quick fix or a deeper refactor. Respond with a numbered priority list and keep code change suggestions minimal until I confirm the ordering. Do not assume you can rerun the suite — analyze only what appears in the log.",
+    "payload": "[pytest] ExampleService CI — main @ build 4821\nFAILED tests/test_auth.py::test_login_returns_token - AssertionError: expected 200, got 401\nFAILED tests/test_auth.py::test_refresh_rotates_token - KeyError: 'refresh_token'\nFAILED tests/test_billing.py::test_invoice_total - assert 49.99 == 50.00\nFAILED tests/test_notifications.py::test_push_payload - TimeoutError: broker not reachable\n======================== 4 failed, 42 passed in 4.2s ========================",
+    "payload_type": "text"
+  },
+  {
+    "id": "ext_002_gallery_scale_block",
+    "category": "dev_agent",
+    "language": "es",
+    "source_transcript": "ExampleApp_Sprint_6.md",
+    "instruction": "Cuando intento probar la app en dispositivo físico y en Mac, la galería es demasiado grande (unas 10.000 fotos en el móvil y 70.000 en el Mac) y la aplicación se bloquea al intentar crear thumbnails para tantas fotos: se queda colgada y no vuelve. Necesito un plan concreto para que el explorador de galería funcione con bibliotecas grandes: paginación real, carga lazy de thumbnails y límites de memoria. Prioriza cambios de arquitectura antes de micro-optimizar UI. No propongas cargar toda la galería en memoria.",
+    "payload": "[runtime] ExampleApp PhotoExplorer\nGallery load started — totalCount=70432 (macOS)\nThumbnail batch 1/?? — allocated 512MB, still loading...\n(process unresponsive > 30s, watchdog terminated UI thread)",
+    "payload_type": "text"
+  },
+  {
+    "id": "ext_003_continuation_misuse",
+    "category": "dev_agent",
+    "language": "es",
+    "source_transcript": "ExampleApp_Sprint_6.md",
+    "instruction": "En iOS la app crashea al abrir la galería con este error: 'SWIFT TASK CONTINUATION MISUSE: requestImageWithLimitedAccessOptions tried to resume its continuation more than once'. Ocurre en PlatformPhotoService.swift alrededor de la línea 220. Diagnose la causa raíz y propón un fix mínimo que garantice que la continuación solo se resume una vez. Incluye snippet corregido.",
+    "payload": "Thread 1: Fatal error: SWIFT TASK CONTINUATION MISUSE\nrequestImageWithLimitedAccessOptions(phAsset:size:localIdentifier:)\n  at PlatformPhotoService.swift:220\nPHImageManager callback invoked twice (degraded + final image)",
+    "payload_type": "text"
+  },
+  {
+    "id": "ext_004_global_styles_refactor",
+    "category": "refactor",
+    "language": "es",
+    "source_transcript": "cursor_crear_un_sistema_de_estilos_glob.md",
+    "instruction": "Analiza el proyecto. Vamos a hacer una intervención transversal. Tenemos repartidos por toda la app `#if os(` para seleccionar colores según plataforma. Partimos de NativeMacOSStyles.swift y creamos un sistema de estilos global: dependencias de plataforma concentradas en un fichero, con `backgroundColor` y el resto de estilos declarados con compilación condicional iOS/macOS, de modo que en el resto de la app usemos `AppColors.background` sin `#if os`. Para inventariar estilos, busca `#if os(iOS)` y `#if os(macOS)` en el repo. Entrega plan por fases y lista de ficheros a tocar primero."
+  },
+  {
+    "id": "ext_005_gps_import_wizard",
+    "category": "debug",
+    "language": "es",
+    "source_transcript": "Resolucion de issues 2025-08-26.md",
+    "instruction": "Estoy probando el wizard de importación de visitas desde la galería, pero siempre dice «No se encontraron fotos con datos de ubicación GPS» aunque las fotos sí tienen GPS en Fotos. Revisa el flujo HistoricalImport → PhotoMetadataService → TripClustering: sospecho que estamos convirtiendo PhotoAsset a PHAsset y perdemos location en el camino. Dame hipótesis ordenadas y qué logs añadir para confirmar.",
+    "payload": "[wizard] scanPhotoLibrary dateRange=2024-01-01..2024-12-31\nphotosInRange=1842\nextractLocationData → 0 items with GPS\nthrow HistoricalImportError.noPhotosWithLocation",
+    "payload_type": "text"
+  },
+  {
+    "id": "ext_006_macos_photo_permission",
+    "category": "ux",
+    "language": "es",
+    "source_transcript": "cursor_mejoras_de_ui_en_el_proyecto.md",
+    "instruction": "En macOS no está pidiendo permiso para acceder a fotos y fallan el wizard y añadir fotos a un RecordItem. En iOS, sin permiso, mostramos un botón en el detalle. ¿Deberíamos pedir permiso al abrir la app y bloquear si el usuario deniega? Evalúa pros/contras y recomienda un flujo unificado iOS/macOS con mínimos cambios de arquitectura."
+  },
+  {
+    "id": "ext_007_xcode_warnings",
+    "category": "dev_agent",
+    "language": "es",
+    "source_transcript": "cursor_analizar_los_warnings_de_la_apli.md",
+    "instruction": "Analicemos los warnings de la aplicación ExampleApp. Clasifícalos por severidad y prioridad de corrección (Swift 6 concurrency primero, deprecaciones iOS 17, luego lógica). Cuenta cuántos warnings principales hay y resume en una tabla severity | file | one-line fix. No ejecutes cambios todavía.",
+    "payload": "[xcodebuild] ExampleApp (iOS Simulator)\nwarning: non-sendable result type '[RecordItem]' cannot be sent from main actor (MapScreenViewModel.swift:60)\nwarning: capture of 'itemsWithLocation' with non-sendable type '[RecordItem]' (MapScreenViewModel.swift:64)\nwarning: 'init(coordinateRegion:...)' was deprecated in iOS 17.0 (DetailView.swift:297)\nwarning: 'onChange(of:perform:)' was deprecated in iOS 17.0 (GalleryView.swift:96)\nwarning: string interpolation produces a debug description for an optional (SyncViewModel.swift:201)\nwarning: initialization of immutable value 'totalItems' was never used (SyncViewModel.swift:206)\nwarning: 'catch' block is unreachable (ImportViewModel.swift:105)\n** BUILD SUCCEEDED ** 15 warnings emitted",
+    "payload_type": "text"
+  },
+  {
+    "id": "ext_008_selection_lost",
+    "category": "bugfix",
+    "language": "es",
+    "source_transcript": "ExampleApp_Sprint_6.md",
+    "instruction": "En iOS selecciono varias fotos en el explorador de galería pero al cerrar la hoja modal no se asocian al RecordItem — la selección se pierde. Revisa PhotoExplorerView y el callback `onPhotosSelected` en PhotoSelectionView. El fix debe propagar la selección al servicio de datos sin duplicar estado.",
+    "payload": "[ui] PhotoExplorerView dismissed — selectedPhotos=3\nPhotoSelectionView.onPhotosSelected: nil (callback not wired)\nDataService: getPhotoReferences(visitId=[UUID]) → 0 photos",
+    "payload_type": "text"
+  }
+]

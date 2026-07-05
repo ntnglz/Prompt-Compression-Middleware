@@ -91,24 +91,44 @@ Proxy responses also expose per-turn cost (input + output tokens, priced separat
 
 ## E2E: output directives (July 2026)
 
-Three-arm benchmark on [`data/e2e_prompts.json`](../data/e2e_prompts.json) (4 prompts with attached payload). Compressor: `granite4.1:3b`. Target: `mistral-medium-3.5` with **`reasoning=none`** (required — `reasoning=high` inflates `completion_tokens` with hidden reasoning).
+Three-arm benchmark on [`data/e2e_prompts.json`](../data/e2e_prompts.json) (4 prompts) and [`data/e2e_prompts_extensive.json`](../data/e2e_prompts_extensive.json) (8 prompts from anonymized COE transcripts). Compressor: **`pcm-granite`** (`glossary_only=True`, auto in CLI). Target: `mistral-medium-3.5` with **`reasoning=none`** (required — `reasoning=high` inflates `completion_tokens` with hidden reasoning).
 
-| Arm | Instruction | `output_style` | Total cost (4 prompts) |
-|-----|-------------|----------------|------------------------|
-| Baseline | Natural | `normal` | **$0.0157** |
-| PCM | Compressed | `normal` | **$0.0129** (−18%) |
-| PCM + concise | Compressed | `concise` | **$0.0069** (−56%) |
+### Short corpus (4 prompts)
+
+| Arm | Instruction | `output_style` | Total cost |
+|-----|-------------|----------------|------------|
+| Baseline | Natural | `normal` | **$0.0204** |
+| PCM | Compressed | `normal` | **$0.0092** (−55%) |
+| PCM + concise | Compressed | `concise` | **$0.0074** (−64%) |
 
 | Metric | Value |
 |--------|-------|
-| Response similarity (PCM normal vs baseline) | **94.50%** |
-| Avg output token savings (concise vs PCM normal) | **42.6%** |
-| Avg cost delta (concise vs baseline, per prompt) | **−$0.00219** |
+| Response similarity (PCM normal vs baseline) | **93.25%** |
+| Avg output token savings (concise vs PCM normal) | **26.4%** |
+| Avg cost delta (concise vs baseline, per prompt) | **−$0.00325** |
+
+### Extensive corpus (8 prompts)
+
+| Arm | Total cost |
+|-----|------------|
+| Baseline | **$0.0444** |
+| PCM | **$0.0352** (−21%) |
+| PCM + concise | **$0.0132** (−70%) |
+
+| Metric | Value |
+|--------|-------|
+| Response similarity | **90.62%** |
+| Avg output token savings (concise vs PCM) | **56.7%** |
 
 Reproduce:
 
 ```bash
-PYTHONPATH=src .venv/bin/python scripts/e2e_benchmark.py --reasoning-effort none -q
+PYTHONPATH=src .venv/bin/python scripts/e2e_benchmark.py \
+  --compressor-model pcm-granite --reasoning-effort none -q
+
+PYTHONPATH=src .venv/bin/python scripts/e2e_benchmark.py \
+  --compressor-model pcm-granite \
+  --prompts data/e2e_prompts_extensive.json --reasoning-effort none -q
 ```
 
-Full report: [`data/benchmarks/output_directives_e2e.md`](../data/benchmarks/output_directives_e2e.md) · JSON: [`data/e2e/runs/e2e_mistral_medium_3_5_20260705_203803.json`](../data/e2e/runs/e2e_mistral_medium_3_5_20260705_203803.json)
+Full report: [`data/benchmarks/output_directives_e2e.md`](../data/benchmarks/output_directives_e2e.md) · JSON (short): [`e2e_mistral_medium_3_5_20260705_205226.json`](../data/e2e/runs/e2e_mistral_medium_3_5_20260705_205226.json) · JSON (extensive): [`e2e_mistral_medium_3_5_20260705_205454.json`](../data/e2e/runs/e2e_mistral_medium_3_5_20260705_205454.json)
