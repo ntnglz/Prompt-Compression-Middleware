@@ -1,5 +1,7 @@
 # Fase 3b — Fine-tune Granite en Cloud (Enfoque A conservador)
 
+> **Maintainers (ES)** — Guía operativa de fine-tuning. Visitantes: [README en inglés](../README.md).
+
 > **Estado: CERRADA** (2026-07-04) — Pipeline cloud validado; modelo `pcm-granite` publicado en Ollama. Ver [Cierre y resultados](#cierre-y-resultados-2026-07-04).
 
 Guía paso a paso para quien nunca ha usado RunPod ni fine-tuning en cloud.

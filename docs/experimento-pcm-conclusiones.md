@@ -1,5 +1,7 @@
 # Experimento PCM — Conclusiones y cierre (julio 2026)
 
+> **Maintainers (ES)** — Documentación de experimento y fine-tuning. Visitantes: [README en inglés](../README.md) · [getting-started](../getting-started.md).
+
 Documento de cierre del experimento **Prompt Compression Middleware**: qué se demostró, qué aprendimos y cómo repetirlo.
 
 ---
