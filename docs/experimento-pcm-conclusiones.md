@@ -170,7 +170,7 @@ Ver spec § Enfoque B: `docs/superpowers/specs/2026-07-04-fase3b-granite-cloud-d
 | Investigación | Fase 3 RL | Optimización por recompensa (ratio + similitud) |
 | Investigación | Fase 4 LLM IR | Representación intermedia óptima |
 
-Referencia COE: `Context Optimization Engine (COE).md`.
+Referencia COE: [github.com/ntnglz/Context-Optimization-Engine](https://github.com/ntnglz/Context-Optimization-Engine).
 
 ---
 

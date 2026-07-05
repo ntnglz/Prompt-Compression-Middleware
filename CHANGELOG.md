@@ -8,6 +8,8 @@ All notable changes to this project are documented here.
 
 - Visitor adoption layer: English README, `docs/getting-started.md`, `docs/FAQ.md`
 - Canonical example in `data/examples/` and `src/pcm/canonical.py`
+- Long anonymized Cursor dev-session example (`cursor_dev_triage.json`) with token metrics; COE corpus attribution
+- `docs/pcm-and-coe.md` — complementary [Context Optimization Engine](https://github.com/ntnglz/Context-Optimization-Engine) guide
 - `pyproject.toml` with extras `[dev]`, `[proxy]`, `[mcp]`, `[training]`
 - `pip install -e ".[dev]"` — import `pcm` without `PYTHONPATH`
 - `python run.py --demo`, `--demo-stub`, `--quickstart`, `--ci`, `--help-all`

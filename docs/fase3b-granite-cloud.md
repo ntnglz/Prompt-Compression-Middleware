@@ -231,7 +231,7 @@ Ollama: pcm-granite:latest (~5.1 GB)
 | Enfoque B | Opcional | Pre-producción a largo plazo (dataset 1k–1.5k pares) |
 | **COE** | Horizonte | Compresión de contextos completos, BD semántica del chat |
 
-**Cierre del experimento PCM:** con E2E validado, el middleware de compresión de *instrucciones* puede darse por demostrado. El siguiente salto ambicioso es **Context Optimization Engine** (ver `Context Optimization Engine (COE).md`).
+**Cierre del experimento PCM:** con E2E validado, el middleware de compresión de *instrucciones* puede darse por demostrado. El siguiente salto ambicioso es **[Context Optimization Engine](https://github.com/ntnglz/Context-Optimization-Engine)** — compresión de contextos completos, memoria semántica del chat, etc.
 
 ---
 

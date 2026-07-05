@@ -1,0 +1,9 @@
+{
+  "model": "mistral-medium-3.5",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Our CI pipeline for ExampleService just failed on the main branch and I need help triaging before we merge. Read the pytest output below carefully, count how many tests failed and in which areas, group failures by root cause rather than file order, and tell me what to fix first based on user impact and how isolated each fix is. Prioritize authentication problems (401 responses or missing token fields in JSON) before billing or rounding errors, and only then consider flaky or environmental failures. For each failure, give the likely component, a one-line hypothesis, and whether it looks like a quick fix or a deeper refactor. Respond with a numbered priority list and keep code change suggestions minimal until I confirm the ordering. Do not assume you can rerun the suite \u2014 analyze only what appears in the log.\n\n```text\n[pytest] ExampleService CI \u2014 main @ build 4821\nFAILED tests/test_auth.py::test_login_returns_token - AssertionError: expected 200, got 401\nFAILED tests/test_auth.py::test_refresh_rotates_token - KeyError: 'refresh_token'\nFAILED tests/test_billing.py::test_invoice_total - assert 49.99 == 50.00\n======================== 3 failed, 42 passed in 4.2s ========================\n```"
+    }
+  ]
+}

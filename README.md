@@ -13,9 +13,9 @@ Client → PCM Proxy (:8090) → Mistral / OpenAI-compatible API
          Ollama (local compressor: granite4.1:3b | pcm-granite)
 ```
 
-Pair with [**Context Optimization Engine (COE)**](https://github.com/ntnglz/Context-Optimization-Engine) for full context optimization:
+Pair with [**Context Optimization Engine (COE)**](https://github.com/ntnglz/Context-Optimization-Engine) to optimize **context** (logs, RAG, chat history) after PCM compresses your **instruction**:
 
-`User → PCM (instruction) → COE (context) → LLM`
+`User → PCM (instruction) → COE (context) → LLM` · [PCM + COE guide](docs/pcm-and-coe.md)
 
 ## Try it now
 
@@ -56,6 +56,23 @@ TASK=review INPUT=python CHECK=race,leak,perf FORMAT=markdown ORDER=severity
 ```
 
 The fenced Python block in [`proxy_chat.json`](data/examples/proxy_chat.json) is never rewritten by PCM.
+
+## Token savings (realistic Cursor-style prompt)
+
+Long instructions are where PCM pays off. Example from an **anonymized dev-session triage** (pattern from the [COE benchmark corpus](https://github.com/ntnglz/Context-Optimization-Engine/tree/master/data/benchmarks/cases/dev_agent)):
+
+| | Tokens |
+|---|--------|
+| Instruction (NL) | 160 |
+| Instruction (PCM) | 31 → **81% saved** on the ask |
+| CI log payload | 95 (unchanged — optimize with [COE](https://github.com/ntnglz/Context-Optimization-Engine)) |
+| **Full message** | 255 → 126 → **51% saved** on total input |
+
+```text
+TASK=triage INPUT=pytest_ci CHECK=auth_401,missing_token,billing_rounding FORMAT=priority_list ORDER=user_impact START=auth
+```
+
+Run `python run.py --demo-stub` for live numbers. Example body: [`cursor_dev_triage.json`](data/examples/cursor_dev_triage.json). Details: [PCM + COE](docs/pcm-and-coe.md).
 
 ## Integration paths
 
@@ -121,6 +138,7 @@ python scripts/mcp/print_cursor_config.py
 | Doc | Audience |
 |-----|----------|
 | [Getting started](docs/getting-started.md) | Install, Docker, proxy, REST, MCP, SDK |
+| [PCM + COE](docs/pcm-and-coe.md) | Complementary context optimization |
 | [FAQ](docs/FAQ.md) | Common questions |
 | [Examples](data/examples/README.md) | Canonical JSON bodies |
 | [STATUS](docs/STATUS.md) | Maintainer experiment status (ES) |

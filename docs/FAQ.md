@@ -27,10 +27,11 @@ Yes. Run `python run.py --demo-stub` for a deterministic before/after example. U
 | | PCM | [COE](https://github.com/ntnglz/Context-Optimization-Engine) |
 |---|-----|-----|
 | Compresses | NL **instructions** | Full **context** / chat memory |
-| Typical input | “Review this code…” | Long RAG context, history |
+| Typical input | “Review this code…”, long Cursor asks | Long RAG context, tool logs, history |
 | Ollama for demo | Yes (or stub) | Library demo works without API key |
+| Example savings | 81% on a long dev-session instruction ([metrics](../data/examples/README.md)) | Depends on context size and COE level |
 
-They are complementary: `User → PCM → COE → LLM`.
+They are complementary: `User → PCM → COE → LLM`. See [PCM + COE guide](pcm-and-coe.md).
 
 ## MCP vs proxy — which should I use?
 

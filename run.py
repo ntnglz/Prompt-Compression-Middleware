@@ -63,6 +63,13 @@ def run_demo(*, stub: bool = False) -> int:
         CANONICAL_PCM,
         CANONICAL_PAYLOAD,
         CANONICAL_USER_MESSAGE,
+        COE_REPO,
+        CURSOR_DEV_INSTRUCTION,
+        CURSOR_DEV_PCM,
+        CURSOR_DEV_PAYLOAD,
+        canonical_metrics,
+        cursor_dev_metrics,
+        format_token_metrics,
     )
     from pcm.prompt_utils import join_instruction_and_payload
 
@@ -97,6 +104,13 @@ def run_demo(*, stub: bool = False) -> int:
     print("AFTER (PCM instruction):")
     print(compressed)
     print()
+    metrics = canonical_metrics()
+    if compressed != CANONICAL_PCM:
+        from pcm.canonical import token_metrics
+
+        metrics = token_metrics(CANONICAL_INSTRUCTION, compressed, CANONICAL_PAYLOAD)
+    print(format_token_metrics(metrics, label="Token savings (tiktoken gpt-4 estimate)"))
+    print()
     print("Payload (unchanged, excerpt):")
     print(CANONICAL_PAYLOAD.splitlines()[0])
     print("...")
@@ -106,9 +120,30 @@ def run_demo(*, stub: bool = False) -> int:
     print()
     print("Full proxy message AFTER:")
     preview = join_instruction_and_payload(compressed, CANONICAL_PAYLOAD)
-    assert preview == join_instruction_and_payload(CANONICAL_PCM, CANONICAL_PAYLOAD)
-    print(CANONICAL_COMPRESSED_MESSAGE[:80] + "…")
+    if compressed == CANONICAL_PCM:
+        print(CANONICAL_COMPRESSED_MESSAGE[:80] + "…")
+    else:
+        print(preview[:80] + "…")
+
     print()
+    print("=" * 60)
+    print("Long Cursor-style instruction (anonymized dev session)")
+    print("=" * 60)
+    print("Derived from COE benchmark corpus — real agent triage pattern.")
+    print()
+    print("BEFORE (excerpt):")
+    print(CURSOR_DEV_INSTRUCTION[:220] + "…")
+    print()
+    print("AFTER (PCM):")
+    print(CURSOR_DEV_PCM)
+    print()
+    print(format_token_metrics(cursor_dev_metrics(), label="Token savings"))
+    print()
+    print("Payload excerpt:")
+    print(CURSOR_DEV_PAYLOAD.splitlines()[1])
+    print("...")
+    print()
+    print(f"Context / chat history → optimize with COE: {COE_REPO}")
     print("Examples: data/examples/ · REST: POST /compress · Proxy: POST /v1/chat/completions")
     return 0
 

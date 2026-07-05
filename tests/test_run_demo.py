@@ -61,6 +61,39 @@ def test_canonical_examples_match_module():
     assert body["messages"][0]["content"] == expected["messages"][0]["content"]
     assert CANONICAL_INSTRUCTION in body["messages"][0]["content"]
 
+def test_demo_stub_shows_token_metrics():
+    result = _run_demo_stub()
+    assert "Token savings" in result.stdout
+    assert "81%" in result.stdout or "51%" in result.stdout
+
+
+def test_cursor_dev_examples_match_module():
+    import json
+
+    from pcm.canonical import (
+        CURSOR_DEV_INSTRUCTION,
+        cursor_dev_compress_request,
+        cursor_dev_proxy_chat_request,
+    )
+
+    compress_path = ROOT / "data" / "examples" / "cursor_dev_compress.json"
+    proxy_path = ROOT / "data" / "examples" / "cursor_dev_triage.json"
+
+    assert json.loads(compress_path.read_text()) == cursor_dev_compress_request()
+    body = json.loads(proxy_path.read_text())
+    expected = cursor_dev_proxy_chat_request()
+    assert body["messages"][0]["content"] == expected["messages"][0]["content"]
+    assert CURSOR_DEV_INSTRUCTION in body["messages"][0]["content"]
+
+
+def test_cursor_dev_metrics_order_of_magnitude():
+    from pcm.canonical import cursor_dev_metrics
+
+    m = cursor_dev_metrics()
+    assert m.instruction_saved >= 100
+    assert m.instruction_ratio >= 0.75
+    assert m.message_ratio >= 0.45
+
 
 def test_pcm_importable_without_pythonpath():
     from pcm import PromptCompressor, __version__

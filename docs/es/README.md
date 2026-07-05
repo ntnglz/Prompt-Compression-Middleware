@@ -188,7 +188,7 @@ python scripts/check_dataset_leakage.py                  # CI: 0 leakage
 ./scripts/ci-local.sh                                    # tests sin Ollama
 ```
 
-**Próximo horizonte:** [Context Optimization Engine (COE)](Context%20Optimization%20Engine%20(COE).md) — compresión de contextos completos y memoria semántica del chat.
+**Próximo horizonte:** [Context Optimization Engine (COE)](https://github.com/ntnglz/Context-Optimization-Engine) — compresión de contextos completos y memoria semántica del chat.
 
 ## Tests
 

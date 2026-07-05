@@ -153,7 +153,11 @@ Suggested pipeline:
 
 `User → PCM proxy → COE → upstream LLM`
 
-COE getting started: https://github.com/ntnglz/Context-Optimization-Engine/blob/master/docs/getting-started.md
+- PCM repo: https://github.com/ntnglz/Context-Optimization-Engine
+- COE getting started: https://github.com/ntnglz/Context-Optimization-Engine/blob/master/docs/getting-started.md
+- Combined guide: [pcm-and-coe.md](pcm-and-coe.md)
+
+Example: a long Cursor CI-triage ask shrinks ~81% with PCM; the attached pytest log is unchanged until COE optimizes context. See [`cursor_dev_triage.json`](../data/examples/cursor_dev_triage.json).
 
 ## Without Ollama
 
