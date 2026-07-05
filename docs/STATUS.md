@@ -10,6 +10,7 @@
 | Fine-tune MLX (`pcm-compressor`) | ✅ Fase 3a |
 | Fine-tune cloud (`pcm-granite`) | ✅ Fase 3b |
 | Validación E2E Mistral | ✅ 94.50% similitud semántica |
+| Output directives (`output_style`) | ✅ E2E −56% coste total vs baseline |
 | Adopción visitante (v1.0.0) | ✅ docs EN, packaging, demo stub |
 
 Experimento **cerrado con éxito**. Detalle: [experimento-pcm-conclusiones.md](experimento-pcm-conclusiones.md).
@@ -49,4 +50,5 @@ No hay GitHub Actions en este repo; CI local documentado en [getting-started](ge
 - [Fase 3b — granite cloud](fase3b-granite-cloud.md)
 - [Fase 3 — MLX](fase3-finetuning.md)
 - [Benchmarks](../data/benchmarks/README.md)
+- [E2E output directives](../data/benchmarks/output_directives_e2e.md)
 - [Plan adopción visitante](plans/2026-07-05-pcm-visitor-adoption.md)

@@ -130,6 +130,22 @@ def main() -> int:
     print(f"Tokens input ahorrados:    {summary['input_tokens_saved']}")
     print(f"Coste original (total):    ${summary['total_cost_original_usd']:.4f}")
     print(f"Coste comprimido (total):  ${summary['total_cost_compressed_usd']:.4f}")
+    if "avg_concise_output_tokens" in summary:
+        concise_total = sum(
+            e.concise_llm.estimated_cost_usd
+            for e in report.entries
+            if e.concise_llm is not None
+        )
+        print(f"Tokens output concise (media): {summary['avg_concise_output_tokens']:.0f}")
+        print(
+            f"Ahorro output concise vs PCM:  "
+            f"{summary.get('avg_output_token_savings_pct', 0):.1f}%"
+        )
+        print(f"Coste concise (total):       ${concise_total:.4f}")
+        print(
+            f"Δ coste concise vs baseline: "
+            f"${summary.get('avg_cost_delta_concise_vs_baseline', 0):.6f} / prompt"
+        )
     print()
     print(f"JSON: {json_path}")
     print(f"MD:   {md_path}")

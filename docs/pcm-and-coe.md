@@ -88,3 +88,27 @@ Proxy responses also expose per-turn cost (input + output tokens, priced separat
 | `X-PCM-Input-Tokens` | Upstream prompt tokens for the turn |
 | `X-PCM-Output-Tokens` | Upstream completion tokens for the turn |
 | `X-PCM-Cost-Total-USD` | `input_price × input_tokens + output_price × output_tokens` |
+
+## E2E: output directives (July 2026)
+
+Three-arm benchmark on [`data/e2e_prompts.json`](../data/e2e_prompts.json) (4 prompts with attached payload). Compressor: `granite4.1:3b`. Target: `mistral-medium-3.5` with **`reasoning=none`** (required — `reasoning=high` inflates `completion_tokens` with hidden reasoning).
+
+| Arm | Instruction | `output_style` | Total cost (4 prompts) |
+|-----|-------------|----------------|------------------------|
+| Baseline | Natural | `normal` | **$0.0157** |
+| PCM | Compressed | `normal` | **$0.0129** (−18%) |
+| PCM + concise | Compressed | `concise` | **$0.0069** (−56%) |
+
+| Metric | Value |
+|--------|-------|
+| Response similarity (PCM normal vs baseline) | **94.50%** |
+| Avg output token savings (concise vs PCM normal) | **42.6%** |
+| Avg cost delta (concise vs baseline, per prompt) | **−$0.00219** |
+
+Reproduce:
+
+```bash
+PYTHONPATH=src .venv/bin/python scripts/e2e_benchmark.py --reasoning-effort none -q
+```
+
+Full report: [`data/benchmarks/output_directives_e2e.md`](../data/benchmarks/output_directives_e2e.md) · JSON: [`data/e2e/runs/e2e_mistral_medium_3_5_20260705_203803.json`](../data/e2e/runs/e2e_mistral_medium_3_5_20260705_203803.json)

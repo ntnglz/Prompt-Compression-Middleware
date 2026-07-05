@@ -211,11 +211,15 @@ Extender `e2e_benchmark.py` con matriz de brazos:
 
 Gate v0 (valores orientativos, ajustar con primer run):
 
-| KPI | Umbral |
-|-----|--------|
-| `cost_delta` (pcm+concise vs baseline) | ≤ **−15%** coste total medio |
-| Comprensión E2E (similitud respuestas) | ≥ **0,90** (no regresar calidad) |
-| `output_tokens` (concise vs normal, misma instrucción PCM) | ≤ **−20%** medio |
+| KPI | Umbral | Resultado 2026-07-05 (`reasoning=none`, 4 prompts) |
+|-----|--------|-----------------------------------------------------|
+| `cost_delta` (pcm+concise vs baseline) | ≤ **−15%** coste total medio | **−56%** ($0.0157 → $0.0069) |
+| Comprensión E2E (similitud respuestas) | ≥ **0,90** (no regresar calidad) | **0,945** |
+| `output_tokens` (concise vs normal, misma instrucción PCM) | ≤ **−20%** medio | **−42,6%** |
+
+Informe completo: [data/benchmarks/output_directives_e2e.md](../../../data/benchmarks/output_directives_e2e.md)
+
+**Nota:** con `reasoning=high`, Mistral reporta miles de `completion_tokens` aunque el texto visible sea breve; el benchmark de output directives debe usar `--reasoning-effort none`.
 
 ---
 
