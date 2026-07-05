@@ -15,6 +15,7 @@ from typing import Any, Optional
 
 from .benchmark import load_example_prompts
 from .compressor import CompressorConfig, PromptCompressor
+from .message_assembly import build_system_prompt
 
 MISTRAL_PCM_SYSTEM_PROMPT = """Eres un asistente preciso y conciso.
 
@@ -130,6 +131,8 @@ class E2EEntry:
     compressed_llm: LLMCallResult
     response_similarity: float
     response_evaluation: str
+    concise_llm: LLMCallResult | None = None
+    output_style_normal: str = "normal"
     compressed_user_prompt: str = ""
     payload_chars: int = 0
 
@@ -151,6 +154,8 @@ class E2EEntry:
             data["compressed_user_prompt"] = self.compressed_user_prompt
         if self.payload_chars:
             data["payload_chars"] = self.payload_chars
+        if self.concise_llm is not None:
+            data["concise_llm"] = self.concise_llm.to_dict()
         return data
 
 
@@ -167,7 +172,8 @@ class E2EReport:
         if not self.entries:
             return {}
 
-        return {
+        concise_entries = [e for e in self.entries if e.concise_llm is not None]
+        result: dict[str, Any] = {
             "total_prompts": len(self.entries),
             "avg_compression_ratio": round(
                 sum(e.compression_ratio for e in self.entries) / len(self.entries), 4
@@ -214,6 +220,36 @@ class E2EReport:
                 2,
             ),
         }
+
+        if concise_entries:
+            result["avg_concise_output_tokens"] = round(
+                sum(e.concise_llm.output_tokens for e in concise_entries)  # type: ignore[union-attr]
+                / len(concise_entries),
+                2,
+            )
+            savings = [
+                (
+                    (e.compressed_llm.output_tokens - e.concise_llm.output_tokens)  # type: ignore[union-attr]
+                    / e.compressed_llm.output_tokens
+                    * 100
+                )
+                for e in concise_entries
+                if e.compressed_llm.output_tokens > 0
+            ]
+            if savings:
+                result["avg_output_token_savings_pct"] = round(
+                    sum(savings) / len(savings), 2
+                )
+            result["avg_cost_delta_concise_vs_baseline"] = round(
+                sum(
+                    e.concise_llm.estimated_cost_usd - e.original_llm.estimated_cost_usd  # type: ignore[union-attr]
+                    for e in concise_entries
+                )
+                / len(concise_entries),
+                6,
+            )
+
+        return result
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -393,6 +429,16 @@ def run_e2e_benchmark(
             compressed_user,
             system_prompt=MISTRAL_PCM_SYSTEM_PROMPT,
         )
+        concise_system = build_system_prompt(
+            compressed_instruction=compression.compressed_prompt,
+            response_lang=item.get("language", "en"),
+            output_style="concise",
+            pcm_interpretation_hint=MISTRAL_PCM_SYSTEM_PROMPT,
+        )
+        concise_llm = mistral.complete(
+            compressed_user,
+            system_prompt=concise_system,
+        )
         similarity, evaluation = _evaluate_response_similarity(
             compressor,
             original_llm.content,
@@ -412,6 +458,7 @@ def run_e2e_benchmark(
                 compression_ratio=compression.compression_ratio,
                 original_llm=original_llm,
                 compressed_llm=compressed_llm,
+                concise_llm=concise_llm,
                 response_similarity=similarity,
                 response_evaluation=evaluation,
             )
@@ -445,12 +492,24 @@ def render_markdown_report(report: E2EReport) -> str:
         f"| Tokens input ahorrados | {summary.get('input_tokens_saved', 0)} |",
         f"| Coste original (total) | ${summary.get('total_cost_original_usd', 0):.4f} |",
         f"| Coste comprimido (total) | ${summary.get('total_cost_compressed_usd', 0):.4f} |",
+    ]
+    if "avg_concise_output_tokens" in summary:
+        lines.extend(
+            [
+                f"| Tokens output concise (media) | {summary['avg_concise_output_tokens']:.0f} |",
+                f"| Ahorro tokens output concise vs PCM (media) | {summary.get('avg_output_token_savings_pct', 0):.1f}% |",
+                f"| Δ coste concise vs baseline (media) | ${summary.get('avg_cost_delta_concise_vs_baseline', 0):.6f} |",
+            ]
+        )
+    lines.extend(
+        [
         "",
         "## Detalle por prompt",
         "",
         "| ID | Categoría | Payload | Compresión | Similitud | Truncado | t_comp | t_llm_orig | t_llm_pcm |",
         "|----|-----------|---------|------------|-----------|----------|--------|------------|-----------|",
-    ]
+        ]
+    )
 
     for entry in report.entries:
         truncated = "sí" if (

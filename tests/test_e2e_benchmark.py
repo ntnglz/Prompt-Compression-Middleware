@@ -113,3 +113,43 @@ def test_e2e_report_summary():
     markdown = render_markdown_report(report)
     assert "Benchmark E2E PCM → Mistral" in markdown
     assert "mistral-medium-3.5" in markdown
+
+
+def test_e2e_report_summary_with_concise_arm():
+    entry = E2EEntry(
+        id="prompt_001",
+        category="code_review",
+        language="es",
+        original_prompt="Analiza",
+        compressed_prompt="TASK=review",
+        compression_time_ms=100.0,
+        compression_ratio=0.4,
+        original_llm=LLMCallResult(
+            content="a", processing_time_ms=1000.0,
+            input_tokens=100, output_tokens=50, total_tokens=150,
+            estimated_cost_usd=0.001,
+        ),
+        compressed_llm=LLMCallResult(
+            content="b", processing_time_ms=900.0,
+            input_tokens=60, output_tokens=40, total_tokens=100,
+            estimated_cost_usd=0.0007,
+        ),
+        concise_llm=LLMCallResult(
+            content="c", processing_time_ms=800.0,
+            input_tokens=70, output_tokens=20, total_tokens=90,
+            estimated_cost_usd=0.0003,
+        ),
+        response_similarity=0.9,
+        response_evaluation="good",
+    )
+    report = E2EReport(
+        generated_at="2026-07-05T00:00:00+00:00",
+        compressor_model="granite",
+        target_model="mistral",
+        reasoning_effort="none",
+        entries=[entry],
+    )
+    summary = report.summary
+    assert summary["avg_concise_output_tokens"] == 20
+    assert summary["avg_output_token_savings_pct"] == 50.0  # (40-20)/40*100
+    assert summary["avg_cost_delta_concise_vs_baseline"] == -0.0007
