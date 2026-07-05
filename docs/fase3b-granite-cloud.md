@@ -1,5 +1,7 @@
 # Fase 3b — Fine-tune Granite en Cloud (Enfoque A conservador)
 
+> **Maintainers (ES)** — Guía operativa de fine-tuning. Visitantes: [README en inglés](../README.md).
+
 > **Estado: CERRADA** (2026-07-04) — Pipeline cloud validado; modelo `pcm-granite` publicado en Ollama. Ver [Cierre y resultados](#cierre-y-resultados-2026-07-04).
 
 Guía paso a paso para quien nunca ha usado RunPod ni fine-tuning en cloud.
@@ -229,7 +231,7 @@ Ollama: pcm-granite:latest (~5.1 GB)
 | Enfoque B | Opcional | Pre-producción a largo plazo (dataset 1k–1.5k pares) |
 | **COE** | Horizonte | Compresión de contextos completos, BD semántica del chat |
 
-**Cierre del experimento PCM:** con E2E validado, el middleware de compresión de *instrucciones* puede darse por demostrado. El siguiente salto ambicioso es **Context Optimization Engine** (ver `Context Optimization Engine (COE).md`).
+**Cierre del experimento PCM:** con E2E validado, el middleware de compresión de *instrucciones* puede darse por demostrado. El siguiente salto ambicioso es **[Context Optimization Engine](https://github.com/ntnglz/Context-Optimization-Engine)** — compresión de contextos completos, memoria semántica del chat, etc.
 
 ---
 

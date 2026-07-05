@@ -1,5 +1,7 @@
 # Fase 3 — Fine-tuning del compresor PCM (Mac local)
 
+> **Maintainers (ES)** — MLX / entrenamiento local. Visitantes: [README en inglés](../README.md).
+
 Guía operativa para entrenar un compresor PCM especializado con LoRA/MLX, exportarlo a Ollama como `pcm-compressor` e integrarlo en el stack existente.
 
 **Hardware de referencia:** Mac M4 Pro, 64 GB RAM (entrenamiento ~1–3 h).

@@ -1,0 +1,9 @@
+{
+  "model": "mistral-medium-3.5",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Review this Python code carefully for race conditions, memory leaks, and optimization opportunities. Return a Markdown report ordered by severity.\n\n```python\nimport threading\n\nCACHE = {}\n\ndef get_user(user_id):\n    if user_id not in CACHE:\n        CACHE[user_id] = expensive_fetch(user_id)\n    return CACHE[user_id]\n\ndef expensive_fetch(user_id):\n    users = []\n    for i in range(100000):\n        users.append({\"id\": i, \"data\": \"x\" * 100})\n    return users[user_id % len(users)]\n\ncounter = 0\n\ndef increment():\n    global counter\n    val = counter\n    counter = val + 1\n\nthreads = [threading.Thread(target=increment) for _ in range(10)]\nfor t in threads:\n    t.start()\nfor t in threads:\n    t.join()\n```"
+    }
+  ]
+}

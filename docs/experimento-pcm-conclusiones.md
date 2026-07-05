@@ -1,5 +1,7 @@
 # Experimento PCM — Conclusiones y cierre (julio 2026)
 
+> **Maintainers (ES)** — Documentación de experimento y fine-tuning. Visitantes: [README en inglés](../README.md) · [getting-started](../getting-started.md).
+
 Documento de cierre del experimento **Prompt Compression Middleware**: qué se demostró, qué aprendimos y cómo repetirlo.
 
 ---
@@ -168,7 +170,7 @@ Ver spec § Enfoque B: `docs/superpowers/specs/2026-07-04-fase3b-granite-cloud-d
 | Investigación | Fase 3 RL | Optimización por recompensa (ratio + similitud) |
 | Investigación | Fase 4 LLM IR | Representación intermedia óptima |
 
-Referencia COE: `Context Optimization Engine (COE).md`.
+Referencia COE: [github.com/ntnglz/Context-Optimization-Engine](https://github.com/ntnglz/Context-Optimization-Engine).
 
 ---
 

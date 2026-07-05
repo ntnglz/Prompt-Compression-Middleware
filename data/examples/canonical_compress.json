@@ -1,0 +1,3 @@
+{
+  "prompt": "Review this Python code carefully for race conditions, memory leaks, and optimization opportunities. Return a Markdown report ordered by severity."
+}

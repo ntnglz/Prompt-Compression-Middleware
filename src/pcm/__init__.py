@@ -5,7 +5,7 @@ Un servidor MCP para comprimir prompts de manera semántica,
 optimizando la comunicación con LLM.
 """
 
-__version__ = "0.1.0"
+__version__ = "1.0.0"
 __author__ = "Antonio J. Gonzalez"
 
 from .compressor import PromptCompressor
