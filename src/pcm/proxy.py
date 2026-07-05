@@ -15,8 +15,15 @@ import httpx
 
 from .compressor import PromptCompressor
 from .compression_policy import CompressionPolicy
-from .e2e_benchmark import MISTRAL_PCM_SYSTEM_PROMPT
+from .e2e_benchmark import (
+    MISTRAL_INPUT_PRICE_PER_M,
+    MISTRAL_OUTPUT_PRICE_PER_M,
+    MISTRAL_PCM_SYSTEM_PROMPT,
+)
+from .message_assembly import build_proxy_system_prompt
+from .output_directives import has_response_block
 from .prompt_utils import join_instruction_and_payload, split_instruction_and_payload
+from .turn_cost import TurnCostMetrics, compute_turn_cost
 from .upstream import UpstreamTarget, list_configured_providers, resolve_upstream
 
 logger = logging.getLogger(__name__)
@@ -30,6 +37,8 @@ class ProxyConfig:
     compress_roles: frozenset[str] = frozenset({"user"})
     inject_pcm_system: bool = True
     pcm_system_prompt: str = MISTRAL_PCM_SYSTEM_PROMPT
+    output_style: str = "normal"
+    response_lang: str = "en"
     timeout: float = 120.0
     min_instruction_tokens: int = 12
 
@@ -44,6 +53,8 @@ class ProxyConfig:
             compress_roles=frozenset(r.strip() for r in roles.split(",") if r.strip()),
             inject_pcm_system=os.getenv("PCM_INJECT_SYSTEM", "true").lower()
             in ("1", "true", "yes"),
+            output_style=os.getenv("PCM_OUTPUT_STYLE", "normal"),
+            response_lang=os.getenv("PCM_RESPONSE_LANG", "en"),
             timeout=float(os.getenv("PCM_PROXY_TIMEOUT", "120")),
             min_instruction_tokens=policy.min_instruction_tokens,
         )
@@ -58,6 +69,7 @@ class ProxyCompressionStats:
     upstream_provider: str = ""
     upstream_model: str = ""
     per_message: list[dict[str, Any]] = field(default_factory=list)
+    turn_cost: TurnCostMetrics | None = None
 
     @property
     def tokens_saved(self) -> int:
@@ -155,28 +167,39 @@ class ChatProxy:
             "compressed_instruction_tokens": compressed_instruction_tokens,
         }
 
-    def _inject_pcm_system(self, messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    def _inject_system_blocks(self, messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
         if not self.config.inject_pcm_system:
             return messages
 
-        pcm_hint = self.config.pcm_system_prompt.strip()
         out = [dict(m) for m in messages]
         system_idx = next(
             (i for i, m in enumerate(out) if m.get("role") == "system"),
             None,
         )
 
+        base = build_proxy_system_prompt(
+            response_lang=self.config.response_lang,
+            output_style=self.config.output_style,  # type: ignore[arg-type]
+            pcm_interpretation_hint=self.config.pcm_system_prompt,
+        )
+
         if system_idx is None:
-            out.insert(0, {"role": "system", "content": pcm_hint})
+            out.insert(0, {"role": "system", "content": base})
             return out
 
         existing = self._normalize_content(out[system_idx].get("content"))
-        if pcm_hint in existing:
+        if has_response_block(existing):
+            hint = self.config.pcm_system_prompt.strip()
+            if hint and hint not in existing:
+                out[system_idx] = {
+                    **out[system_idx],
+                    "content": f"{existing}\n\n{hint}".strip(),
+                }
             return out
 
         out[system_idx] = {
             **out[system_idx],
-            "content": f"{existing}\n\n{pcm_hint}".strip(),
+            "content": f"{existing}\n\n{base}".strip(),
         }
         return out
 
@@ -238,7 +261,7 @@ class ChatProxy:
                     }
                 )
 
-        messages = self._inject_pcm_system(messages)
+        messages = self._inject_system_blocks(messages)
         transformed["messages"] = messages
 
         return transformed, stats
@@ -276,6 +299,23 @@ class ChatProxy:
             response.raise_for_status()
             payload = response.json()
 
+        usage = payload.get("usage") or {}
+        output_tokens = int(usage.get("completion_tokens") or 0)
+        assistant_content = ""
+        choices = payload.get("choices") or []
+        if choices:
+            assistant_content = self._normalize_content(
+                choices[0].get("message", {}).get("content")
+            )
+
+        stats.turn_cost = compute_turn_cost(
+            messages=transformed.get("messages", []),
+            output_text=assistant_content,
+            output_tokens=output_tokens or None,
+            input_price_per_m=MISTRAL_INPUT_PRICE_PER_M,
+            output_price_per_m=MISTRAL_OUTPUT_PRICE_PER_M,
+        )
+
         stats.compression_time_ms = round(stats.compression_time_ms, 2)
         logger.info(
             "Proxy OK provider=%s model=%s compressed=%s ratio=%.1f%% "
@@ -300,4 +340,8 @@ class ChatProxy:
             headers["X-PCM-Upstream-Provider"] = stats.upstream_provider
         if stats.upstream_model:
             headers["X-PCM-Upstream-Model"] = stats.upstream_model
+        if stats.turn_cost:
+            headers["X-PCM-Input-Tokens"] = str(stats.turn_cost.input_tokens)
+            headers["X-PCM-Output-Tokens"] = str(stats.turn_cost.output_tokens)
+            headers["X-PCM-Cost-Total-USD"] = f"{stats.turn_cost.cost_total:.6f}"
         return headers

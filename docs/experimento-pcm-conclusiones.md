@@ -54,6 +54,30 @@ Fuente: `data/benchmarks/fase3b_validation.md` (2026-07-04).
 | baseline_full | 93.25% | 47.13% |
 | **pcm-granite** | **94.50%** | **49.54%** |
 
+### 3.4 Output directives — `output_style=concise` (2026-07-05)
+
+Tres brazos E2E (`mistral-medium-3.5`, `reasoning=none`, compresor **`pcm-granite`**). Fuente: [data/benchmarks/output_directives_e2e.md](../data/benchmarks/output_directives_e2e.md).
+
+**Corpus corto (4 prompts):**
+
+| Brazo | Coste total |
+|-------|-------------|
+| Baseline (NL) | $0.0204 |
+| PCM (`normal`) | $0.0092 (−55%) |
+| **PCM + concise** | **$0.0074 (−64%)** |
+
+Similitud PCM normal vs baseline: **93.25%**. Ahorro output concise vs PCM: **26.4%**.
+
+**Corpus extenso (8 prompts, transcripts COE anonimizados):**
+
+| Brazo | Coste total |
+|-------|-------------|
+| Baseline (NL) | $0.0444 |
+| PCM (`normal`) | $0.0352 (−21%) |
+| **PCM + concise** | **$0.0132 (−70%)** |
+
+Similitud: **90.62%**. Ahorro output concise vs PCM: **56.7%**.
+
 **Coste cloud RunPod:** ~$0.18 (RTX 3090, ~25 min).
 
 ### 3.2 Fase 3a — `pcm-compressor` (Mac MLX)
