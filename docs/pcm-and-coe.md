@@ -9,6 +9,11 @@ User message
 ┌─────────────────────────────────────┐
 │  PCM — instruction compression      │  NL → TASK=… (Ollama compressor)
 │  "Review this code carefully…"      │
+│                                     │
+│  Outbound system prompt includes:   │
+│  • compressed instruction (PCM)     │
+│  • RESPONSE block (output_style)    │
+│  • optional PCM interpretation hint │
 └─────────────────────────────────────┘
     │
     ▼
@@ -21,12 +26,15 @@ User message
 Upstream LLM (Mistral, OpenAI, …)
 ```
 
+`output_style` is `normal` (user-facing) or `concise` (agent loops); the RESPONSE rules live in the system prompt.
+
 ## What each project does
 
 | Layer | Project | Compresses | Typical savings |
 |-------|---------|------------|-----------------|
 | **Instruction** | **PCM** (this repo) | Verbose natural-language *asks* | High on long Cursor-style prompts (see metrics below) |
 | **Context** | **[COE](https://github.com/ntnglz/Context-Optimization-Engine)** | Attached logs, RAG blocks, multi-turn history | High on long sessions and tool output |
+| **Output style** | **PCM** (`output_style`) | `normal` (user-facing) vs `concise` (agent loops) — RESPONSE rules in system | Fewer output tokens on agent/tool chains |
 
 PCM **does not** rewrite fenced code, documents, or CI logs — it only shrinks the instruction that precedes them. COE **does** optimize those context blocks and chat memory.
 
@@ -65,3 +73,18 @@ Pipeline wiring is integration-specific; the intended order is always **PCM firs
 - Cursor agent with verbose asks *and* long tool logs → **both**
 
 See also [FAQ — PCM vs COE](FAQ.md#pcm-vs-coe--which-do-i-need).
+
+## Output directives and turn cost
+
+| Env var | Default | Purpose |
+|---------|---------|---------|
+| `PCM_OUTPUT_STYLE` | `normal` | `normal` or `concise` — selects the RESPONSE block in the outbound system prompt |
+| `PCM_RESPONSE_LANG` | `en` | Language line inside the RESPONSE block |
+
+Proxy responses also expose per-turn cost (input + output tokens, priced separately):
+
+| Header | Meaning |
+|--------|---------|
+| `X-PCM-Input-Tokens` | Upstream prompt tokens for the turn |
+| `X-PCM-Output-Tokens` | Upstream completion tokens for the turn |
+| `X-PCM-Cost-Total-USD` | `input_price × input_tokens + output_price × output_tokens` |
