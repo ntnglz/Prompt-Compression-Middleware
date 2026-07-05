@@ -112,7 +112,7 @@ def run_http_server(port: int = 8080):
     fastapi_app = FastAPI(
         title="PCM MCP Server",
         description="Prompt Compression Middleware - API HTTP",
-        version="0.1.0"
+        version="1.0.0"
     )
     
     # Configurar CORS
@@ -221,7 +221,7 @@ def run_proxy_server(port: int = DEFAULT_PROXY_PORT):
     proxy_app = FastAPI(
         title="PCM Proxy",
         description="Prompt Compression Middleware - Proxy OpenAI-compatible",
-        version="0.2.0",
+        version="1.0.0",
     )
 
     proxy_app.add_middleware(

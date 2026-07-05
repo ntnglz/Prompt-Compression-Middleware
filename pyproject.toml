@@ -1,0 +1,67 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pcm"
+version = "1.0.0"
+description = "Prompt Compression Middleware — compress natural-language instructions to compact PCM format"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "Proprietary — research prototype" }
+authors = [{ name = "Antonio J. Gonzalez" }]
+keywords = ["llm", "prompt-compression", "mcp", "proxy", "ollama"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+dependencies = [
+    "ollama>=0.3.0",
+    "tiktoken>=0.5.0",
+    "pydantic>=2.5.0",
+    "numpy>=1.24.0",
+    "python-dotenv>=1.0.0",
+]
+
+[project.optional-dependencies]
+proxy = [
+    "fastapi>=0.109.0",
+    "uvicorn[standard]>=0.27.0",
+    "httpx>=0.26.0",
+    "mistralai>=1.0.0",
+]
+mcp = [
+    "mcp>=1.0.0",
+]
+dev = [
+    "pcm[proxy,mcp]",
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.23.0",
+    "black>=24.0.0",
+    "isort>=5.13.0",
+    "flake8>=6.1.0",
+    "mypy>=1.8.0",
+]
+training = [
+    "mlx-lm>=0.21.0",
+    "mlx>=0.22.0",
+    "transformers>=4.43.0,<5.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/ntnglz/Prompt-Compression-Middleware"
+Repository = "https://github.com/ntnglz/Prompt-Compression-Middleware"
+Documentation = "https://github.com/ntnglz/Prompt-Compression-Middleware#readme"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+markers = [
+    "integration: tests that require a running Ollama instance",
+]

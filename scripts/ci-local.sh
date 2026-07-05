@@ -10,7 +10,10 @@ if [[ ! -x "$PYTHON" ]]; then
   PYTHON="python3"
 fi
 
-export PYTHONPATH="${ROOT}/src"
+# Prefer editable install; fall back to PYTHONPATH for bare checkouts
+if ! "$PYTHON" -c "import pcm" 2>/dev/null; then
+  export PYTHONPATH="${ROOT}/src"
+fi
 
 echo "==> PCM CI local (rápido)"
 echo "    Excluye: integration (Ollama)"
